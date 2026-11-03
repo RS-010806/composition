@@ -1,2 +1,12 @@
 {"id": "gemini-3-flash-preview|B|0", "gemini-3.5-flash-lite": {"flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": {"flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}}
 {"id": "gemini-3.8-flash|B|0", "gemini-3.5-flash-lite": {"flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": {"flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}}
+{"id": "gemini-3-flash-preview|B|1", "gemini-3.5-flash-lite": {"idx": 1, "flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": null}
+{"id": "gemini-3-flash-preview|B|2", "gemini-3.5-flash-lite": {"idx": 2, "flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": null}
+{"id": "gemini-3-flash-preview|B|3", "gemini-3.5-flash-lite": {"idx": 3, "flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": null}
+{"id": "gemini-3-flash-preview|B|4", "gemini-3.5-flash-lite": {"idx": 4, "flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": null}
+{"id": "gemini-3-flash-preview|B|5", "gemini-3.5-flash-lite": {"idx": 5, "flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": null}
+{"id": "gemini-3-flash-preview|B|6", "gemini-3.5-flash-lite": {"idx": 1, "flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": null}
+{"id": "gemini-3-flash-preview|B|7", "gemini-3.5-flash-lite": {"idx": 2, "flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": null}
+{"id": "gemini-3-flash-preview|B|8", "gemini-3.5-flash-lite": {"idx": 3, "flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": null}
+{"id": "gemini-3-flash-preview|B|9", "gemini-3.5-flash-lite": {"idx": 4, "flags_potato": true, "onion_garlic_in_recipe": false, "other_root_in_recipe": false}, "gemini-3.1-flash-lite": null}
+{"id": "gemini-3-flash-preview|K|9", "gemini-3.5-flash-lite": {"idx": 1, "after_sunset_stated": true, "fruit_stated": true, "green_rule_stated": "leafy_only", "root_stated": true}, "gemini-3.1-flash-lite": null}

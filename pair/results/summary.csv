@@ -1,8 +1,8 @@
 model,condition,n,passes,pass_rate,ci95_low,ci95_high,answers_stating_all_green_rule
 gemini-3.1-pro-preview,K,1,1,1.00,0.21,1.00,1/1
 gemini-3.1-pro-preview,A0,9,9,1.00,0.70,1.00,9/9
-gemini-3-flash-preview,B,1,1,1.00,0.21,1.00,
-gemini-3-flash-preview,K,9,9,1.00,0.70,1.00,9/9
+gemini-3-flash-preview,B,10,10,1.00,0.72,1.00,
+gemini-3-flash-preview,K,10,9,0.90,0.60,0.98,9/10
 gemini-3-flash-preview,A0,10,10,1.00,0.72,1.00,10/10
 gemini-3.8-flash,B,1,1,1.00,0.21,1.00,
 gemini-3.8-flash,K,2,2,1.00,0.34,1.00,2/2

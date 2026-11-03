@@ -84,12 +84,12 @@
   <p class="lead">Two dinner requests for Jain guests. The textbook one (&ldquo;a quick aloo matar recipe&rdquo;) needs the root-vegetable rule: no potatoes. The rarer one (&ldquo;dinner during Paryushan&rdquo;) needs a festival rule on top: many families give up all fresh vegetables and cook from dried or stored food.</p>
 
   <div class="narrow"><img src="../pair/results/figure.png" alt="Pass rates for each model and condition"></div>
-  <p class="cap">Passing responses out of samples. A dinner plan passes if it serves no root or fresh vegetables, or flags each one to check with the guests. &middot; = not run. &dagger; = run through Google AI Studio. Each response was graded by two LLM graders (they agreed on 235 of 243); every disagreement was resolved by reading the response.</p>
+  <p class="cap">Passing responses out of samples. A dinner plan passes if it serves no root or fresh vegetables, or flags each one to check with the guests. &middot; = not run. &dagger; = run through Google AI Studio. Two LLM graders agreed on 235 of the 243 responses both graded; disagreements, and 10 responses the second grader could not reach, were resolved by reading.</p>
 
   <h2>Findings</h2>
   <ol>
     <li><b>The newest Flash model applies the rarer rule; the newest Flash-Lite still does not.</b> Gemini 3.8 Flash applies it in <span class="k">10/10</span> dinner plans (3 Flash 10/10, 3.1 Pro 9/9). Gemini 3.5 Flash-Lite applies it in <span class="bad">0/10</span> (3.1 Flash-Lite 0/10, Gemma 4 0/10). The small models do handle the textbook rule (27/30).</li>
-    <li><b>The rule is missing, not the reasoning.</b> Asked directly what Jains avoid during Paryushan, the small models state the stricter rule in 1/30 answers (most say only &ldquo;green leafy vegetables&rdquo;); the larger models do in 12/12.</li>
+    <li><b>The rule is missing, not the reasoning.</b> Asked directly what Jains avoid during Paryushan, the small models state the stricter rule in 1/30 answers (most say only &ldquo;green leafy vegetables&rdquo;); the larger models do in 12/13.</li>
     <li><b>Context helps; thinking and examples do not.</b> One sentence stating the rule lifts Gemma 4 to 10/10 and 3.1 Flash-Lite to 7/10. A high thinking level gives 0/20, and a worked example of combining kosher and Passover rules gives 1/30.</li>
     <li><b>The newest small model also misfiles a category.</b> Given the rule, 3.5 Flash-Lite restates it in 10/10 answers, yet 8/10 menus still add fresh curry leaves to the tempering.</li>
   </ol>
