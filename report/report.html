@@ -30,13 +30,14 @@
   .k { color: var(--green); font-weight: 700; }
   .bad { color: var(--red); font-weight: 700; }
   .designs { width: 64%; margin: 0.4mm auto 0 auto; }
-  .heat { width: 74%; margin: 0 auto; }
+  .heat { width: 70%; margin: 0 auto; }
   table { border-collapse: collapse; width: 100%; font-size: 7.9pt; margin: 0.5mm 0 2.4mm 0; line-height: 1.35; }
   th, td { text-align: left; padding: 1.1mm 2mm 1.1mm 0; border-bottom: 1px solid #eaeef2; vertical-align: top; }
   th { color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); }
   td.q { width: 52%; font-style: italic; }
   .small { font-size: 8.2pt; line-height: 1.38; }
-  .refs { font-size: 7.6pt; color: var(--muted); line-height: 1.38; }
+  .refs { font-size: 7.3pt; color: var(--muted); line-height: 1.38; }
+  .nw { white-space: nowrap; }
   .refs p { margin-bottom: 0.9mm; }
 </style>
 </head>
@@ -49,9 +50,9 @@
   <div class="summary">
     <div class="summary-title">In short</div>
     <ol>
-      <li><b>After pretraining, composition pays off.</b> 11 examples, one row and one column of a 6 &times; 6 color-shape grid, were enough to name all 25 other combinations, in post-training (<span class="k">20/20 runs</span>) and in context (<span class="k">64/64 answers</span>).</li>
+      <li><b>After pretraining, composition pays off.</b> 11 examples, one row and one column of a 6 &times; 6 color-shape grid, were enough to name all 25 other combinations, in post-training (<span class="k">20/20 runs</span>) and in context (<span class="k">95/96 answers</span>, three models).</li>
       <li><b>Which examples matters more than how many.</b> With each color always on the same shape, post-training scored <span class="bad">0%</span>; labels the model itself gave in context lifted it to <span class="k">100%</span>.</li>
-      <li><b>On newer models, the rarer rule still goes first.</b> Gemini 3.8 Flash applies the stricter Paryushan rule in <span class="k">10/10</span> dinner plans; Gemini 3.5 Flash-Lite in <span class="bad">0/10</span>, because it lacks the rule.</li>
+      <li><b>The newest small model still misses the rarer rule.</b> Gemini 4 Argon and Gemini 3.8 Flash apply the stricter Paryushan rule in <span class="k">10/10</span> dinner plans each; Gemini 3.5 Flash-Lite in <span class="bad">0/10</span>, and states it in 1 of 10 answers when asked.</li>
     </ol>
   </div>
 
@@ -59,19 +60,19 @@
   <p>If a model knows &ldquo;red&rdquo; and &ldquo;rectangle&rdquo;, does it know &ldquo;red rectangle&rdquo;? If so, the examples needed grow with <b>colors plus shapes</b>, not <b>colors times shapes</b>. This is hard to exploit in large-scale pretraining, so the tests use the two later stages: post-training and in-context learning.</p>
 
   <img class="designs" src="../results/designs.png" alt="Three 6 by 6 grids showing the row-plus-column, random and confounded example sets">
-  <p class="cap"><b>Figure 1.</b> Colors (rows) by shapes (columns), and the three example sets compared. Drawn cells are shown in training or as examples; cells marked ? are the 10 combinations never shown to any model, and every score is on them.</p>
+  <p class="cap"><b>Figure 1.</b> The three kinds of example set (rows: colors; columns: shapes). Cells marked ? are held out of all training and used for scoring in (a), (b) and (d). In context (c), each trial draws a new set of the same kind and tests a combination outside it whose color and shape appear in it.</p>
 
   <p class="small"><b>How it was tested.</b> Colors and shapes are named with made-up words (&ldquo;dax wug&rdquo;), so names must be learned from the examples; an answer counts only if both words are right. <b>(a)</b> A small CNN trained from scratch on the 26 shown combinations. <b>(b)</b> Post-training: linear color and shape heads on frozen Gemini image embeddings. <b>(c)</b> In context: 11 labeled pictures in the prompt of Gemini 3.5 Flash-Lite, Gemini 3.1 Flash-Lite or Gemma 4, then a new picture to name. <b>(d)</b> Labels the model gives in context, added to the post-training data of (b).</p>
 
   <img src="../results/composition_figure_report.png" alt="Four bar charts of never-seen combinations named correctly">
-  <p class="cap"><b>Figure 2.</b> Never-seen combinations named correctly. (a) 5 runs, (b) 20 runs, &plusmn; s.d.; (c) correct answers out of trials, three models pooled (random: Gemini 3.5 Flash-Lite); (d) 160 test images, with in-context labels right for 16/20 images (color word first) and 5/20 (shape word first, 15 swapped).</p>
+  <p class="cap"><b>Figure 2.</b> Never-seen combinations named correctly. (a) 5 runs, (b) 20 runs, &plusmn; s.d.; (c) correct answers out of trials, pooled over the three models; (d) 160 test images, with in-context labels right for 16/20 images (color word first) and 5/20 (shape word first, 15 swapped).</p>
 
   <h3>What this shows</h3>
   <ul>
-    <li><b>Cheap after pretraining, not before.</b> The same 11 examples give 100% on frozen Gemini features but 25% for a CNN trained from scratch, which gets the colors of unseen combinations right (98%) but not their shapes (31%).</li>
-    <li><b>Colors and shapes must vary independently, and labels must be per attribute.</b> Random sets miss some colors or shapes (82%), confounded sets hide which word is the color (0%), and one label per combination cannot name new ones (0%).</li>
-    <li><b>In context, priors fill the gap.</b> With confounded examples, all 64 answers followed one of the two readings the examples allow, and 54 read the first word as the color, as English does.</li>
-    <li><b>In-context labels can repair post-training data, priors included.</b> They lifted confounded post-training from 0% to 100%, and passed on a swap (1%) when the word order went against English. This is a perception analogue of Lampinen et al. (2025), who improved fine-tuning by adding in-context inferences to its data.</li>
+    <li><b>Cheap after pretraining, not before.</b> The same 11 examples give 100% on frozen Gemini features but 25% for a CNN trained from scratch, which gets the colors of unseen combinations right (97%) but not their shapes (27%).</li>
+    <li><b>Colors and shapes must vary independently, and labels must be per attribute.</b> In post-training, random sets miss some values (82%), confounded sets hide which word is which (0%), and per-combination labels cannot name new ones (0%).</li>
+    <li><b>In context, priors fill the gap.</b> With confounded examples, 95 of 96 answers followed one of the two readings the examples allow, and 79 read the first word as the color, as English does.</li>
+    <li><b>In-context labels can repair post-training data.</b> They took confounded post-training from 0% to 100% (1% when word order went against English): a perception analogue of Lampinen et al. (2025), who fine-tuned on in-context inferences.</li>
   </ul>
 </section>
 
@@ -85,28 +86,28 @@
   </table>
 
   <img class="heat" src="../pair/results/figure.png" alt="Pass counts for each model and condition">
-  <p class="cap"><b>Figure 3.</b> Passing answers out of samples. Columns 4 to 7 add help to the Paryushan query: asking for the rules first, a worked example of combining rules for another tradition (kosher during Passover), stating the rule in the prompt, or a high thinking level. &middot; = not run. &dagger; = run through Google AI Studio.</p>
+  <p class="cap"><b>Figure 3.</b> Passing answers out of 10. Columns 4 to 7 add help to the Paryushan dinner query: asking for the rules first, a worked example from another tradition (kosher during Passover), the rule stated in the prompt, or a high thinking level. &dagger; 9 dinner plans and 1 direct answer run in Google AI Studio, same settings.</p>
 
   <ul>
-    <li><b>The newest Flash model applies the rarer rule; the newest Flash-Lite does not.</b> Gemini 3.8 Flash: 10 of 10 dinner plans (Gemini 3 Flash 10/10, Gemini 3.1 Pro 9/9). Gemini 3.5 Flash-Lite: 0 of 10 (Gemini 3.1 Flash-Lite and Gemma 4 also 0/10), although all of them handle the basic query.</li>
-    <li><b>The rule is missing, not misapplied.</b> Asked directly what Jains avoid during Paryushan, the small models state the stricter rule in 1 of 30 answers (most say only &ldquo;green leafy vegetables&rdquo;); the larger models in 12 of 13.</li>
-    <li><b>Supplying the fact helps; more thinking does not.</b> One sentence stating the rule lifts Gemma 4 from 0 to 10 of 10 and Gemini 3.1 Flash-Lite to 7 of 10, while a high thinking level gives 0 of 20. Gemini 3.5 Flash-Lite restates the supplied rule yet still adds fresh curry leaves in 8 of 10 menus.</li>
+    <li><b>The newest larger models apply the rarer rule; the newest small model does not.</b> Gemini 4 Argon and Gemini 3.8 Flash pass 10 of 10 dinner plans each, as do Gemini 3 Flash and 3.1 Pro. Gemini 3.5 Flash-Lite passes 0 of 10, as do Gemini 3.1 Flash-Lite and Gemma 4, though all handle the basic query (8 to 10 of 10).</li>
+    <li><b>The small models lack the rule.</b> Asked directly what Jains avoid during Paryushan, they state the stricter rule in 1 of 30 answers, most naming only &ldquo;green leafy vegetables&rdquo;; the larger models state it in 39 of 40.</li>
+    <li><b>Supplying the rule helps; more thinking does not.</b> One sentence stating the rule lifts Gemma 4 from 0 to 10 of 10 and Gemini 3.1 Flash-Lite to 7 of 10; a high thinking level gives 0 of 30. Gemini 3.5 Flash-Lite restates the supplied rule but still adds fresh curry leaves in 8 of 10 menus. The larger models pass 199 of 200 dinner plans with or without help.</li>
   </ul>
 
   <h2>3&nbsp;&nbsp;How the two connect, and what is next</h2>
-  <p>Both parts point the same way: combining known parts is cheap, and failures come from a missing part. With every color and shape known, 11 examples covered 36 combinations; with the festival rule supplied, Gemma 4 combined it with the dinner request every time. Next:</p>
+  <p>Both parts point the same way: models combine parts they know, and fail when a part is missing (an unseen color, the festival rule) or ambiguous (confounded examples). With every color and shape known, 11 examples covered 36 combinations; with the festival rule supplied, Gemma 4 combined it with the dinner request every time. Next:</p>
   <ol>
     <li>Real attribute-object pairs, which natural images confound (bananas are almost always yellow), for example MIT-States.</li>
-    <li>Compounds whose parts change each other&rsquo;s meaning, such as &ldquo;red wine&rdquo; or &ldquo;fake gun&rdquo;, where an additive prior should fail.</li>
+    <li>Compounds whose parts change each other&rsquo;s meaning (&ldquo;red wine&rdquo;, &ldquo;fake gun&rdquo;), where an additive prior should fail.</li>
     <li>When a model&rsquo;s in-context labels can be trusted to fill gaps in post-training data, and how to detect when they cannot.</li>
   </ol>
 
   <h3>Method notes and limitations</h3>
-  <p class="small">Part 1 uses synthetic 128 &times; 128 images. Post-training here means linear heads on frozen embeddings (<i>gemini-embedding-2</i>), not fine-tuning the model. In context, 8 to 16 trials per cell with one prompt template; the in-context-label pilot uses one image per unlabeled combination and one labeling model. Part 2 uses the Gemini API with default settings and no search grounding, with 10 samples per cell where the free tier allowed. Two LLM graders (Gemini 3.5 and 3.1 Flash-Lite) classify every recommended food, and every disagreement or missing grade was checked by hand. Practice varies by family and sect, so a menu also passes if it flags each fresh vegetable to check with the guests.</p>
+  <p class="small">Part 1 uses synthetic images (32 &times; 32 for the CNN, 128 &times; 128 otherwise). Post-training here means linear heads on frozen embeddings (<i class="nw">gemini-embedding-2</i>), not fine-tuning the model. In context: 16 trials per model and cell (12 for two-object pictures, 72 of 72 right) and one prompt template; the pilot uses one image per unlabeled combination and one labeling model. Part 2 uses the Gemini API with default settings and no search grounding, 10 samples per cell (490 answers). Two LLM graders (Gemini 3.5 and 3.1 Flash-Lite) classify every recommended food; they agreed on 460 of 490, and each disagreement was resolved by reading the answer.</p>
 
   <h3>References</h3>
   <div class="refs">
-    <p>A. K. Lampinen, A. Chaudhry, S. C. Y. Chan, C. Wild, D. Wan, A. Ku, J. Bornschein, R. Pascanu, M. Shanahan, J. L. McClelland. On the generalization of language models from in-context learning and finetuning: a controlled study. arXiv:2505.00661, 2025.</p>
+    <p>A. K. Lampinen et al. On the generalization of language models from in-context learning and finetuning: a controlled study. arXiv:2505.00661, 2025.</p>
     <p>P. Isola, J. J. Lim, E. H. Adelson. Discovering states and transformations in image collections (MIT-States). CVPR, 2015.</p>
     <p>On Paryushan practice: JainGPT, &ldquo;What Jains Eat During Paryushan&rdquo;; Wikipedia, &ldquo;Jain vegetarianism&rdquo; (the narrower, leafy-greens reading).</p>
   </div>

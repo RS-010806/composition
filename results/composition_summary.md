@@ -1,6 +1,6 @@
 # Composition results
 
-Grid: 6 colors x 6 shapes (36 combinations). Ten combinations are held out of every training set, example set and unlabeled pool. *cross* = one full row plus one full column of the grid (11 combinations). *confounded* = each color always shown with the same shape.
+Grid: 6 colors x 6 shapes (36 combinations). In sections 1, 2 and 4, ten combinations are held out of every training set and unlabeled pool, and are used only for scoring. In section 3 (in context), each trial draws its own example set and made-up words, and asks for one combination outside the set whose color and shape both appear in it. *cross* = one full row plus one full column of the grid (11 combinations). *confounded* = each color always shown with the same shape.
 
 ## 1. Small CNN trained from scratch (JAX, 32 x 32 images)
 
@@ -39,17 +39,25 @@ Grid: 6 colors x 6 shapes (36 combinations). Ten combinations are held out of ev
 | Gemini 3.5 Flash-Lite | random | shape word first | one object | 16/16 | 0.81-1.00 |
 | Gemini 3.5 Flash-Lite | confounded | color word first | one object | 14/16 | 0.64-0.97 |
 | Gemini 3.5 Flash-Lite | confounded | shape word first | one object | 3/16 | 0.07-0.43 |
-| Gemini 3.1 Flash-Lite | cross | color word first | one object | 8/8 | 0.68-1.00 |
-| Gemini 3.1 Flash-Lite | cross | shape word first | one object | 8/8 | 0.68-1.00 |
-| Gemini 3.1 Flash-Lite | confounded | color word first | one object | 6/8 | 0.41-0.93 |
-| Gemini 3.1 Flash-Lite | confounded | shape word first | one object | 2/8 | 0.07-0.59 |
-| Gemma 4 26B-A4B | cross | color word first | one object | 8/8 | 0.68-1.00 |
-| Gemma 4 26B-A4B | cross | shape word first | one object | 8/8 | 0.68-1.00 |
-| Gemma 4 26B-A4B | confounded | color word first | one object | 7/8 | 0.53-0.98 |
-| Gemma 4 26B-A4B | confounded | shape word first | one object | 0/8 | 0.00-0.32 |
+| Gemini 3.1 Flash-Lite | cross | color word first | one object | 16/16 | 0.81-1.00 |
+| Gemini 3.1 Flash-Lite | cross | shape word first | one object | 15/16 | 0.72-0.99 |
+| Gemini 3.1 Flash-Lite | cross | color word first | two objects | 12/12 | 0.76-1.00 |
+| Gemini 3.1 Flash-Lite | cross | shape word first | two objects | 12/12 | 0.76-1.00 |
+| Gemini 3.1 Flash-Lite | random | color word first | one object | 16/16 | 0.81-1.00 |
+| Gemini 3.1 Flash-Lite | random | shape word first | one object | 16/16 | 0.81-1.00 |
+| Gemini 3.1 Flash-Lite | confounded | color word first | one object | 8/16 | 0.28-0.72 |
+| Gemini 3.1 Flash-Lite | confounded | shape word first | one object | 3/16 | 0.07-0.43 |
+| Gemma 4 26B-A4B | cross | color word first | one object | 16/16 | 0.81-1.00 |
+| Gemma 4 26B-A4B | cross | shape word first | one object | 16/16 | 0.81-1.00 |
+| Gemma 4 26B-A4B | cross | color word first | two objects | 12/12 | 0.76-1.00 |
+| Gemma 4 26B-A4B | cross | shape word first | two objects | 12/12 | 0.76-1.00 |
+| Gemma 4 26B-A4B | random | color word first | one object | 16/16 | 0.81-1.00 |
+| Gemma 4 26B-A4B | random | shape word first | one object | 16/16 | 0.81-1.00 |
+| Gemma 4 26B-A4B | confounded | color word first | one object | 15/16 | 0.72-0.99 |
+| Gemma 4 26B-A4B | confounded | shape word first | one object | 0/16 | 0.00-0.19 |
 
-Confounded examples, all three models: every answer (64/64) matches one of the two readings the examples allow. 54/64 read the first word as the color and 10/64 read the second word as the color, in both word orders.
-Two-object pictures: 0/24 answers used a word belonging to the other object.
+Confounded examples, all three models: 95 of 96 answers match one of the two readings the examples allow; 79 read the first word as the color and 16 read the second word as the color, in both word orders.
+Two-object pictures: 0 of 72 answers used a word belonging to the other object.
 
 ## 4. Pilot: in-context labels as post-training data
 

@@ -20,6 +20,7 @@ MODELS = [  # (model id, display name, group)
     ("gemini-3.1-pro-preview", "Gemini 3.1 Pro†", "Larger"),
     ("gemini-3-flash-preview", "Gemini 3 Flash", "Larger"),
     ("gemini-3.8-flash", "Gemini 3.8 Flash", "Larger"),
+    ("gemini-4-argon", "Gemini 4 Argon", "Larger"),
     ("gemini-3.1-flash-lite", "Gemini 3.1 Flash-Lite", "Small"),
     ("gemini-3.5-flash-lite", "Gemini 3.5 Flash-Lite", "Small"),
     ("gemma-4-26b-a4b-it", "Gemma 4 26B-A4B", "Small"),
@@ -118,12 +119,14 @@ def write_stats(cells):
              "gemini-3.1-flash-lite", "A0")
     contrast("Applies (A0): 3.8 Flash vs 3.5 Flash-Lite", "gemini-3.8-flash", "A0",
              "gemini-3.5-flash-lite", "A0")
+    contrast("Applies (A0): Gemini 4 Argon vs 3.5 Flash-Lite", "gemini-4-argon", "A0",
+             "gemini-3.5-flash-lite", "A0")
     (ROOT / "results" / "stats.md").write_text("\n".join(lines) + "\n")
 
 
 def figure(cells, path):
     cmap = LinearSegmentedColormap.from_list("pass", ["#fbeaea", "#f4f6f8", "#d9efe1", "#1a7f37"])
-    fig, ax = plt.subplots(figsize=(10.0, 4.5), dpi=220)
+    fig, ax = plt.subplots(figsize=(10.0, 0.75 * len(MODELS) + 0.9), dpi=220)
     nrow, ncol = len(MODELS), len(CONDS)
     for r, (m, name, grp) in enumerate(MODELS):
         for c, (cond, _) in enumerate(CONDS):
@@ -150,11 +153,12 @@ def figure(cells, path):
     ax.tick_params(length=0)
     for s in ax.spines.values():
         s.set_visible(False)
-    ax.axhline(3, color="#57606a", lw=1.2)
+    n_small = sum(g == "Small" for _, _, g in MODELS)
+    ax.axhline(n_small, color="#57606a", lw=1.2)
     ax.axvline(1, color="#57606a", lw=0.8, ls=":")
     ax.axvline(3, color="#57606a", lw=1.2)
     ytr = ax.get_yaxis_transform()
-    for y0, y1, label in ((3, 6, "larger models"), (0, 3, "small models")):
+    for y0, y1, label in ((n_small, nrow, "larger models"), (0, n_small, "small models")):
         ax.plot([-0.255, -0.255], [y0 + 0.12, y1 - 0.12], color="#8c959f", lw=1, transform=ytr, clip_on=False)
         ax.text(-0.268, (y0 + y1) / 2, label, rotation=90, ha="right", va="center", fontsize=9.5,
                 color="#57606a", transform=ytr)

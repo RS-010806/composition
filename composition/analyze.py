@@ -103,8 +103,10 @@ def pooled(cells, design, order=None, binding=False, model=None):
 
 def summary_md(scratch, probe, icl, pilot):
     L = ["# Composition results", "",
-         "Grid: 6 colors x 6 shapes (36 combinations). Ten combinations are held out of every training set, "
-         "example set and unlabeled pool. *cross* = one full row plus one full column of the grid (11 combinations). "
+         "Grid: 6 colors x 6 shapes (36 combinations). In sections 1, 2 and 4, ten combinations are held out of every "
+         "training set and unlabeled pool, and are used only for scoring. In section 3 (in context), each trial draws its "
+         "own example set and made-up words, and asks for one combination outside the set whose color and shape both "
+         "appear in it. *cross* = one full row plus one full column of the grid (11 combinations). "
          "*confounded* = each color always shown with the same shape.", ""]
 
     L += ["## 1. Small CNN trained from scratch (JAX, 32 x 32 images)", "",
@@ -136,9 +138,9 @@ def summary_md(scratch, probe, icl, pilot):
     total = sum(c["n"] for (m, d, o, b), c in icl.items() if d == "confounded")
     dist = sum(c["distractor"] for (m, d, o, b), c in icl.items() if b)
     nb = sum(c["n"] for (m, d, o, b), c in icl.items() if b)
-    L += ["", f"Confounded examples, all three models: every answer ({first + second}/{total}) matches one of the two readings the "
-          f"examples allow. {first}/{total} read the first word as the color and {second}/{total} read the second word as the color, "
-          "in both word orders.", f"Two-object pictures: {dist}/{nb} answers used a word belonging to the other object."]
+    L += ["", f"Confounded examples, all three models: {first + second} of {total} answers match one of the two readings the "
+          f"examples allow; {first} read the first word as the color and {second} read the second word as the color, "
+          "in both word orders.", f"Two-object pictures: {dist} of {nb} answers used a word belonging to the other object."]
 
     if pilot:
         L += ["", "## 4. Pilot: in-context labels as post-training data", "",
@@ -223,13 +225,13 @@ def figure(scratch, probe, icl, pilot, path, icl_model="gemini-3.5-flash-lite"):
          "b  Post-training on a frozen pretrained model (Gemini image embeddings, linear heads)")
 
     def c(label, color, design, order=None, binding=False):
-        k, n = pooled(icl, design, order, binding, icl_model)
+        k, n = pooled(icl, design, order, binding)
         return (label, (k / n if n else 0.0), None, color, f"{k}/{n}")
     bars(axc, [c("row + column", GREEN, "cross"), c("random", GREY, "random"),
                c("confounded,\ncolor word first", LIGHT, "confounded", "adj"),
                c("confounded,\nshape word first", RED, "confounded", "noun"),
                c("row + column,\ntwo objects", GREEN, "cross", None, True)],
-         f"c  In context ({MODEL_NAMES[icl_model]}, 11 labeled examples)")
+         "c  In context (three models, 11 labeled examples)")
     axc.set_ylabel("Never-seen combinations named correctly", fontsize=FS["ylabel"], color=INK)
 
     t_adj, t_noun = pilot["adj"], pilot["noun"]
@@ -240,7 +242,7 @@ def figure(scratch, probe, icl, pilot, path, icl_model="gemini-3.5-flash-lite"):
          "d  In-context labels as post-training data (pilot)")
     fig.text(0.07, 0.0, "6 colors x 6 shapes. Every score is on combinations absent from that condition's training or example set "
              "(the 10 held-out combinations in a, b and d). Row + column = one full row plus one full column of the grid;\nconfounded = each "
-             "color always with the same shape. Error bars: sd over seeds (5 in a, 20 in b). In c, labels give exact names out of trials. "
+             "color always with the same shape. Error bars: sd over seeds (5 in a, 20 in b). In c, labels give exact names out of trials, pooled over three models. "
              f"In d, the trained heads are scored on 160 images.\nIn d, the in-context labels were right for {t_adj['teacher']['right']}/{t_adj['teacher']['n']} "
              f"images (color word first) and {t_noun['teacher']['right']}/{t_noun['teacher']['n']} (shape word first, "
              f"{t_noun['teacher']['swapped']} with color and shape swapped).", fontsize=7.3, color=MUTED, va="top")
