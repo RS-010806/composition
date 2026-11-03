@@ -22,13 +22,17 @@ If a model knows "red" and "rectangle", can a few examples teach it every color-
 
 | Set | Combinations | What it shows |
 |---|---|---|
-| cross | 11: one full row and one full column of the grid | every color and every shape, none tied to a single partner |
+| row + column | 11: one full row and one full column of the grid | every color and every shape, none tied to a single partner |
 | random | 11 drawn from the 26 shown | the same budget without design |
 | confounded | 6: each color always with the same shape | every color and every shape, but they never vary independently |
 
+![The grid and the three example sets](results/designs.png)
+
+*Drawn cells are shown in training or as examples. Cells marked ? are the 10 held-out combinations; every score is on them. The random set shown is the one from seed 0, where yellow and triangle never appear.*
+
 **Settings.**
 
-- **a. From scratch.** A small CNN in JAX/Flax with a color head and a shape head, trained on 12,000 images of the 26 shown combinations, then optionally post-trained on 220 cross images. 5 seeds. [`composition/posttrain.py`](composition/posttrain.py)
+- **a. From scratch.** A small CNN in JAX/Flax with a color head and a shape head, trained on 12,000 images of the 26 shown combinations, then optionally post-trained on 220 row + column images. 5 seeds. [`composition/posttrain.py`](composition/posttrain.py)
 - **b. Post-training on a frozen pretrained model.** Images embedded with the Gemini API image embedding model (`gemini-embedding-2`, 768 dimensions). Ridge-regression heads trained on about 110 images, with either one label per attribute (a color head and a shape head) or one label per combination. 20 seeds. [`composition/posttrain_probe.js`](composition/posttrain_probe.js)
 - **c. In context.** Gemini 3.5 Flash-Lite, Gemini 3.1 Flash-Lite and Gemma 4 26B-A4B see 11 labeled pictures with made-up two-word names ("dax wug"), then name a new picture. Made-up words keep English color names out, so the names have to be learned from the examples. The made-up language puts either the color word or the shape word first. One extra test shows two objects and asks for one of them. [`composition/icl_runner.js`](composition/icl_runner.js)
 - **d. Pilot: in-context labels as post-training data.** The labeled post-training set is confounded (6 combinations, 108 images). Gemini 3.5 Flash-Lite sees 11 of those labeled images in context and names one unlabeled image of each of the other 20 shown combinations. The heads from (b) are then trained on both and scored on the 10 held-out combinations. [`composition/icl_to_posttrain.js`](composition/icl_to_posttrain.js)
@@ -37,9 +41,9 @@ If a model knows "red" and "rectangle", can a few examples teach it every color-
 
 Share of never-seen combinations named correctly (both color and shape right):
 
-| Setting | cross | random | confounded |
+| Setting | row + column | random | confounded |
 |---|---|---|---|
-| a. Small CNN from scratch | 25% (30% before cross post-training) | | |
+| a. Small CNN from scratch | 25% (30% before row + column post-training) | | |
 | b. Post-training, one label per attribute | **100%** (20/20 seeds) | 82% (4/20 seeds at 100%) | 0% |
 | b. Post-training, one label per combination | 0% | | |
 | c. In context, three models | **64/64** | 32/32 (3.5 Flash-Lite) | 27/32 color word first, 5/32 shape word first |
@@ -58,7 +62,7 @@ All per-run numbers are in [results/composition_summary.md](results/composition_
 
 ### What it means
 
-- **Composition is cheap after pretraining, not before it.** The same cross examples that give 100% on frozen Gemini features give 25% for a CNN trained from scratch, which gets the color of held-out combinations right (98%) but not the shape (31%). The saving comes from attributes the pretrained model already represents separately, and it grows with the grid: C + S - 1 examples for C x S combinations.
+- **Composition is cheap after pretraining, not before it.** The same row + column examples that give 100% on frozen Gemini features give 25% for a CNN trained from scratch, which gets the color of held-out combinations right (98%) but not the shape (31%). The saving comes from attributes the pretrained model already represents separately, and it grows with the grid: C + S - 1 examples for C x S combinations.
 - **The examples must be deconfounded.** Each attribute value has to appear with more than one partner. Random sets miss some values (82%), and confounded sets give a learner no way to tell the attributes apart (0%).
 - **The targets must be factorized.** One label per attribute composes; one label per combination cannot name a combination it has not seen (0%).
 - **In context, priors decide what the examples leave open.** That is why in-context learning handled confounded examples that post-training could not, and also why it failed when the prior pointed the wrong way.
@@ -96,7 +100,7 @@ python composition/posttrain.py --seeds 5 --p_home -1 0.95 \
 #   composition/icl_runner.js         ICL.add(model, design, order, binding, n); ICL.start()
 #   composition/icl_to_posttrain.js   await IP.teach('adj'); await IP.teach('noun'); IP.report()
 
-python composition/analyze.py     # results/composition_summary.md and composition_figure.png
+python composition/analyze.py     # results/composition_summary.md and the figures
 ```
 
 The Jain pair has its own instructions in [pair/README.md](pair/README.md#reproduce).
@@ -114,5 +118,3 @@ report/        two-page summary (PDF)
 ## References
 
 - A. K. Lampinen, A. Chaudhry, S. C. Y. Chan, C. Wild, D. Wan, A. Ku, J. Bornschein, R. Pascanu, M. Shanahan, J. L. McClelland. *On the generalization of language models from in-context learning and finetuning: a controlled study.* arXiv:2505.00661, 2025.
-
-Rishi Ashish Shah, November 2026. MIT License.

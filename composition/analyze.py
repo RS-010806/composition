@@ -186,77 +186,7 @@ def bars(ax, items, title):
     ax.set_title(title, fontsize=FS["title"], color=INK, loc="left", pad=8, fontweight="bold")
 
 
-def figure(scratch, probe, icl, pilot, path, icl_model="gemini-3.5-flash-lite", wide=False):
-    """2 x 2 figure for the README; wide=True gives one row of four panels without a caption (report)."""
-    if wide:
-        FS.update(value=8.6, tick=7.3, title=9.0, ylabel=8.2)
-        fig = plt.figure(figsize=(16.5, 4.1), dpi=220)
-        row = fig.add_gridspec(1, 4, width_ratios=[2.2, 5, 5, 4], wspace=0.16)
-        axa, axb, axc, axd = (fig.add_subplot(row[i]) for i in range(4))
-    else:
-        FS.update(value=8.8, tick=7.9, title=9.6, ylabel=8.6)
-        fig = plt.figure(figsize=(11.6, 8.2), dpi=220)
-        outer = fig.add_gridspec(2, 1, hspace=0.55)
-        top = outer[0].subgridspec(1, 2, width_ratios=[2.1, 5], wspace=0.22)
-        bot = outer[1].subgridspec(1, 2, width_ratios=[5, 4], wspace=0.22)
-        axa, axb = fig.add_subplot(top[0]), fig.add_subplot(top[1])
-        axc, axd = fig.add_subplot(bot[0]), fig.add_subplot(bot[1])
-    for ax in (axa, axb, axc, axd):
-        style(ax)
-
-    a0, a1 = scratch[(-1.0, "none")], scratch[(-1.0, "cross")]
-    L = (lambda full, short: short) if wide else (lambda full, short: full)
-    bars(axa, [(L("trained on\n26 combinations", "trained on\n26 combos"), a0["held"], a0["sd"], GREY, None),
-               (L("+ cross\npost-training", "+ cross\npost-train"), a1["held"], a1["sd"], GREEN, None)],
-         "a  CNN from scratch" if wide else "a  Small CNN trained from scratch")
-    axa.set_ylabel("Never-seen combinations named correctly", fontsize=FS["ylabel"], color=INK)
-
-    p = lambda d, h="factorized": (probe[(d, h)]["held"], probe[(d, h)]["sd"])
-    bars(axb, [(L("cross\n(11 combinations)", "cross\n(11)"), *p("cross"), GREEN, None),
-               (L("random\n(11 combinations)", "random\n(11)"), *p("random11"), GREY, None),
-               (L("confounded\n(6 combinations)", "confounded\n(6)"), *p("confounded"), RED, None),
-               (L("cross, one label\nper combination", "cross, one\nlabel per\ncombination"), *p("cross", "joint"), DARK, None),
-               (L("all 26 shown", "all 26\nshown"), *p("all26"), LIGHT, None)],
-         "b  Post-training: linear heads on frozen Gemini embeddings" if wide else
-         "b  Post-training on a frozen pretrained model (Gemini image embeddings, linear heads)")
-
-    def c(label, color, design, order=None, binding=False):
-        k, n = pooled(icl, design, order, binding, icl_model)
-        return (label, (k / n if n else 0.0), None, color, f"{k}/{n}")
-    bars(axc, [c("cross", GREEN, "cross"), c("random", GREY, "random"),
-               c(L("confounded,\ncolor word first", "confounded,\ncolor word\nfirst"), LIGHT, "confounded", "adj"),
-               c(L("confounded,\nshape word first", "confounded,\nshape word\nfirst"), RED, "confounded", "noun"),
-               c(L("cross, two\nobjects", "cross, two\nobjects"), GREEN, "cross", None, True)],
-         f"c  In context ({MODEL_NAMES[icl_model]}, 11 examples)" if wide else
-         f"c  In context ({MODEL_NAMES[icl_model]}, 11 labeled examples)")
-    if not wide:
-        axc.set_ylabel("Never-seen combinations named correctly", fontsize=FS["ylabel"], color=INK)
-    else:
-        for ax in (axb, axc, axd):
-            ax.tick_params(axis="y", labelleft=False)
-
-    if pilot:
-        t_adj, t_noun = pilot.get("adj"), pilot.get("noun")
-        items = [("confounded\nonly", pilot["labeled_only"]["compound"], None, RED, None)]
-        if t_adj:
-            items.append((L("+ labels from\ncontext, color\nword first", "+ in-context\nlabels, color\nword first"), t_adj["student"]["compound"], None, GREEN, None))
-        if t_noun:
-            items.append((L("+ labels from\ncontext, shape\nword first", "+ in-context\nlabels, shape\nword first"), t_noun["student"]["compound"], None, RED, None))
-        ref = t_adj or t_noun
-        items.append(("+ true\nlabels", ref["oracle_same_images"]["compound"], None, LIGHT, None))
-        bars(axd, items, "d  In-context labels as post-training data")
-        teacher_note = (f" In d, the in-context labels were right for {t_adj['teacher']['right']}/{t_adj['teacher']['n']} images "
-                        f"(color word first) and {t_noun['teacher']['right']}/{t_noun['teacher']['n']} (shape word first, "
-                        f"{t_noun['teacher']['swapped']} with color and shape swapped).") if (t_adj and t_noun) else ""
-    else:
-        teacher_note = ""
-
-    if not wide:
-        fig.text(0.07, 0.0, "6 colors x 6 shapes. Every score is on combinations absent from that condition's training or example set "
-                 "(the 10 held-out combinations in a, b and d). cross = one full row plus one full column of the grid;\nconfounded = each "
-                 "color always with the same shape. Error bars: sd over seeds (5 in a, 20 in b). In c, labels give exact names out of trials. "
-                 "In d, the student is scored on 160 images." + ("\n" + teacher_note.strip() if teacher_note else ""),
-                 fontsize=7.3, color=MUTED, va="top")
+def save(fig, path):
     fig.savefig(path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     try:
@@ -266,11 +196,167 @@ def figure(scratch, probe, icl, pilot, path, icl_model="gemini-3.5-flash-lite", 
         pass
 
 
+def figure(scratch, probe, icl, pilot, path, icl_model="gemini-3.5-flash-lite"):
+    """Full 2 x 2 figure for the README (every condition)."""
+    FS.update(value=8.8, tick=7.9, title=9.6, ylabel=8.6)
+    fig = plt.figure(figsize=(11.6, 8.2), dpi=220)
+    outer = fig.add_gridspec(2, 1, hspace=0.55)
+    top = outer[0].subgridspec(1, 2, width_ratios=[2.1, 5], wspace=0.22)
+    bot = outer[1].subgridspec(1, 2, width_ratios=[5, 4], wspace=0.22)
+    axa, axb = fig.add_subplot(top[0]), fig.add_subplot(top[1])
+    axc, axd = fig.add_subplot(bot[0]), fig.add_subplot(bot[1])
+    for ax in (axa, axb, axc, axd):
+        style(ax)
+
+    a0, a1 = scratch[(-1.0, "none")], scratch[(-1.0, "cross")]
+    bars(axa, [("trained on\n26 combinations", a0["held"], a0["sd"], GREY, None),
+               ("+ row + column\npost-training", a1["held"], a1["sd"], GREEN, None)],
+         "a  Small CNN trained from scratch")
+    axa.set_ylabel("Never-seen combinations named correctly", fontsize=FS["ylabel"], color=INK)
+
+    p = lambda d, h="factorized": (probe[(d, h)]["held"], probe[(d, h)]["sd"])
+    bars(axb, [("row + column\n(11 combinations)", *p("cross"), GREEN, None),
+               ("random\n(11 combinations)", *p("random11"), GREY, None),
+               ("confounded\n(6 combinations)", *p("confounded"), RED, None),
+               ("row + column, one\nlabel per combination", *p("cross", "joint"), DARK, None),
+               ("all 26 shown", *p("all26"), LIGHT, None)],
+         "b  Post-training on a frozen pretrained model (Gemini image embeddings, linear heads)")
+
+    def c(label, color, design, order=None, binding=False):
+        k, n = pooled(icl, design, order, binding, icl_model)
+        return (label, (k / n if n else 0.0), None, color, f"{k}/{n}")
+    bars(axc, [c("row + column", GREEN, "cross"), c("random", GREY, "random"),
+               c("confounded,\ncolor word first", LIGHT, "confounded", "adj"),
+               c("confounded,\nshape word first", RED, "confounded", "noun"),
+               c("row + column,\ntwo objects", GREEN, "cross", None, True)],
+         f"c  In context ({MODEL_NAMES[icl_model]}, 11 labeled examples)")
+    axc.set_ylabel("Never-seen combinations named correctly", fontsize=FS["ylabel"], color=INK)
+
+    t_adj, t_noun = pilot["adj"], pilot["noun"]
+    bars(axd, [("confounded\nonly", pilot["labeled_only"]["compound"], None, RED, None),
+               ("+ labels from\ncontext, color\nword first", t_adj["student"]["compound"], None, GREEN, None),
+               ("+ labels from\ncontext, shape\nword first", t_noun["student"]["compound"], None, RED, None),
+               ("+ true\nlabels", t_adj["oracle_same_images"]["compound"], None, LIGHT, None)],
+         "d  In-context labels as post-training data (pilot)")
+    fig.text(0.07, 0.0, "6 colors x 6 shapes. Every score is on combinations absent from that condition's training or example set "
+             "(the 10 held-out combinations in a, b and d). Row + column = one full row plus one full column of the grid;\nconfounded = each "
+             "color always with the same shape. Error bars: sd over seeds (5 in a, 20 in b). In c, labels give exact names out of trials. "
+             f"In d, the trained heads are scored on 160 images.\nIn d, the in-context labels were right for {t_adj['teacher']['right']}/{t_adj['teacher']['n']} "
+             f"images (color word first) and {t_noun['teacher']['right']}/{t_noun['teacher']['n']} (shape word first, "
+             f"{t_noun['teacher']['swapped']} with color and shape swapped).", fontsize=7.3, color=MUTED, va="top")
+    save(fig, path)
+
+
+def report_figure(scratch, probe, icl, pilot, path):
+    """Focused one-row figure for the two-page report."""
+    FS.update(value=8.8, tick=7.6, title=9.2, ylabel=8.2)
+    fig = plt.figure(figsize=(16.0, 4.0), dpi=230)
+    row = fig.add_gridspec(1, 4, width_ratios=[2.2, 4, 4, 4], wspace=0.14)
+    axa, axb, axc, axd = (fig.add_subplot(row[i]) for i in range(4))
+    for ax in (axa, axb, axc, axd):
+        style(ax)
+    for ax in (axb, axc, axd):
+        ax.tick_params(axis="y", labelleft=False)
+
+    a0, a1 = scratch[(-1.0, "none")], scratch[(-1.0, "cross")]
+    bars(axa, [("26 shown", a0["held"], a0["sd"], GREY, None), ("+ row +\ncolumn", a1["held"], a1["sd"], GREEN, None)],
+         "a  CNN trained from scratch")
+    axa.set_ylabel("Never-seen combinations named correctly", fontsize=FS["ylabel"], color=INK)
+
+    p = lambda d: (probe[(d, "factorized")]["held"], probe[(d, "factorized")]["sd"])
+    bars(axb, [("row +\ncolumn", *p("cross"), GREEN, None), ("random", *p("random11"), GREY, None),
+               ("confounded", *p("confounded"), RED, None), ("all 26\nshown", *p("all26"), LIGHT, None)],
+         "b  Post-training (frozen Gemini embeddings)")
+
+    def c(label, color, design, order=None):
+        k, n = pooled(icl, design, order, False)
+        return (label, (k / n if n else 0.0), None, color, f"{k}/{n}")
+    bars(axc, [c("row +\ncolumn", GREEN, "cross"), c("random", GREY, "random"),
+               c("confounded,\ncolor word\nfirst", LIGHT, "confounded", "adj"),
+               c("confounded,\nshape word\nfirst", RED, "confounded", "noun")],
+         "c  In context (three models)")
+
+    t_adj, t_noun = pilot["adj"], pilot["noun"]
+    bars(axd, [("confounded\nonly", pilot["labeled_only"]["compound"], None, RED, None),
+               ("+ in-context\nlabels, color\nword first", t_adj["student"]["compound"], None, GREEN, None),
+               ("+ in-context\nlabels, shape\nword first", t_noun["student"]["compound"], None, RED, None),
+               ("+ true\nlabels", t_adj["oracle_same_images"]["compound"], None, LIGHT, None)],
+         "d  In-context labels for post-training")
+    save(fig, path)
+
+
+SHAPE_NAMES = ["circle", "square", "triangle", "diamond", "star", "plus"]
+COLOR_HEX = ["#d72828", "#f08714", "#e1cd1e", "#28a53c", "#285adc", "#8c32b4"]
+HELD_OUT = [(1, 2), (1, 3), (2, 3), (2, 4), (3, 4), (3, 5), (4, 1), (4, 5), (5, 1), (5, 2)]
+DESIGNS = [
+    ("Row + column: 11 combinations", "every color and shape, in mixed pairs",
+     sorted({(c, 0) for c in range(6)} | {(0, s) for s in range(6)})),
+    ("Random: 11 combinations", "here, yellow and triangle never appear",
+     [(5, 5), (0, 1), (3, 1), (3, 0), (1, 5), (0, 3), (0, 4), (5, 4), (4, 4), (0, 5), (1, 4)]),  # seed 0 of the probe
+    ("Confounded: 6 combinations", "each color always with the same shape",
+     [(c, c) for c in range(6)]),
+]
+
+
+def glyph(ax, shape, x, y, r, color):
+    import numpy as np
+    from matplotlib import patches
+    if shape == "circle":
+        ax.add_patch(patches.Circle((x, y), r, color=color, lw=0))
+        return
+    if shape == "square":
+        a = r * 0.82
+        pts = [(-a, -a), (a, -a), (a, a), (-a, a)]
+    elif shape == "triangle":
+        pts = [(r * np.cos(t), r * np.sin(t)) for t in (np.pi / 2, np.pi / 2 + 2 * np.pi / 3, np.pi / 2 + 4 * np.pi / 3)]
+        pts = [(px, py - r * 0.12) for px, py in pts]
+    elif shape == "diamond":
+        pts = [(0, r), (r * 0.7, 0), (0, -r), (-r * 0.7, 0)]
+    elif shape == "star":
+        pts = [((r if k % 2 == 0 else r * 0.45) * np.cos(np.pi / 2 + k * np.pi / 5),
+                (r if k % 2 == 0 else r * 0.45) * np.sin(np.pi / 2 + k * np.pi / 5)) for k in range(10)]
+    else:  # plus
+        a, b = r, r * 0.34
+        pts = [(-b, -a), (b, -a), (b, -b), (a, -b), (a, b), (b, b), (b, a), (-b, a), (-b, b), (-a, b), (-a, -b), (-b, -b)]
+    ax.add_patch(patches.Polygon([(x + px, y + py) for px, py in pts], closed=True, color=color, lw=0))
+
+
+def designs_figure(path):
+    """The grid, the three example sets and the held-out combinations, drawn as pictures."""
+    from matplotlib import patches
+    fig, axes = plt.subplots(1, 3, figsize=(10.2, 3.75), dpi=230)
+    for k, (ax, (title, sub, shown)) in enumerate(zip(axes, DESIGNS)):
+        ax.set_xlim(-1.15, 6.05)
+        ax.set_ylim(-0.25, 7.2)
+        ax.set_aspect("equal")
+        ax.axis("off")
+        shown = set(shown)
+        for s in range(6):   # column headers: grey shape glyphs
+            glyph(ax, SHAPE_NAMES[s], s + 0.5, 6.55, 0.24, "#8c959f")
+        for c in range(6):   # row headers: color swatches
+            y = 5 - c + 0.5
+            ax.add_patch(patches.FancyBboxPatch((-0.92, y - 0.2), 0.42, 0.4, boxstyle="round,pad=0.02", color=COLOR_HEX[c], lw=0))
+            for s in range(6):
+                x0, y0 = s, 5 - c
+                held = (c, s) in HELD_OUT
+                face = "#ffffff" if (c, s) in shown else ("#eef1f4" if held else "#fafbfc")
+                ax.add_patch(patches.Rectangle((x0 + 0.04, y0 + 0.04), 0.92, 0.92, facecolor=face, edgecolor="#d0d7de", lw=0.7))
+                if (c, s) in shown:
+                    glyph(ax, SHAPE_NAMES[s], x0 + 0.5, y0 + 0.5, 0.33, COLOR_HEX[c])
+                elif held:
+                    ax.text(x0 + 0.5, y0 + 0.47, "?", ha="center", va="center", fontsize=11, color="#8c959f", fontweight="bold")
+        ax.text(-1.15, -0.05, title, fontsize=10.2, fontweight="bold", color=INK, va="top")
+        ax.text(-1.15, -0.62, sub, fontsize=8.9, color=MUTED, va="top")
+    fig.subplots_adjust(wspace=0.08)
+    save(fig, path)
+
+
 def main():
     scratch, probe, icl, pilot = load_scratch(), load_probe(), load_icl(), load_pilot()
     (RES / "composition_summary.md").write_text(summary_md(scratch, probe, icl, pilot))
     figure(scratch, probe, icl, pilot, RES / "composition_figure.png")
-    figure(scratch, probe, icl, pilot, RES / "composition_figure_wide.png", wide=True)
+    report_figure(scratch, probe, icl, pilot, RES / "composition_figure_report.png")
+    designs_figure(RES / "designs.png")
     print((RES / "composition_summary.md").read_text())
 
 
