@@ -70,7 +70,7 @@
   <h3>What this shows</h3>
   <ul>
     <li><b>Cheap after pretraining, not before.</b> The same 11 examples give 100% on frozen Gemini features but 25% for a CNN trained from scratch, which gets the colors of unseen combinations right (97%) but not their shapes (27%).</li>
-    <li><b>Colors and shapes must vary independently, and labels must be per attribute.</b> In post-training, random sets miss some values (82%), confounded sets hide which word is which (0%), and per-combination labels cannot name new ones (0%).</li>
+    <li><b>Colors and shapes must vary independently, and labels must be per attribute.</b> In post-training, random sets miss some values (82%), confounded sets tie each color to a shape (0%), and per-combination labels cannot name new ones (0%).</li>
     <li><b>In context, priors fill the gap.</b> With confounded examples, 95 of 96 answers followed one of the two readings the examples allow, and 79 read the first word as the color, as English does.</li>
     <li><b>In-context labels can repair post-training data.</b> They took confounded post-training from 0% to 100% (1% when word order went against English): a perception analogue of Lampinen et al. (2025), who fine-tuned on in-context inferences.</li>
   </ul>
