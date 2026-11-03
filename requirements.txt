@@ -1,0 +1,7 @@
+numpy>=1.26
+pillow>=10.0
+jax[cpu]>=0.4.30
+flax>=0.8
+optax>=0.2
+matplotlib>=3.8
+requests>=2.31

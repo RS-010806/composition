@@ -1,0 +1,41 @@
+order,color,shape,image,teacher_color,teacher_shape,right,swapped,raw,modelVersion,ts
+adj,0,1,0,1,1,false,false,Based on the examples: - **rux mup**: orange square (Ex 1  7,gemini-3.5-flash-lite,2026-11-03T05:05:06.046Z
+adj,0,2,0,2,0,false,true,bek nim,gemini-3.5-flash-lite,2026-11-03T05:05:10.738Z
+adj,0,3,0,0,3,true,false,wug dax,gemini-3.5-flash-lite,2026-11-03T05:05:11.967Z
+adj,0,5,0,0,5,true,false,wug tiv,gemini-3.5-flash-lite,2026-11-03T05:05:16.113Z
+adj,0,4,0,0,4,true,false,wug kib,gemini-3.5-flash-lite,2026-11-03T05:05:16.984Z
+adj,1,0,0,1,0,true,false,rux nim,gemini-3.5-flash-lite,2026-11-03T05:05:20.167Z
+adj,1,4,0,1,4,true,false,rux kib,gemini-3.5-flash-lite,2026-11-03T05:05:24.566Z
+adj,2,0,0,2,0,true,false,bek nim,gemini-3.5-flash-lite,2026-11-03T05:05:30.351Z
+adj,1,5,0,1,5,true,false,rux tiv,gemini-3.5-flash-lite,2026-11-03T05:05:30.558Z
+adj,2,1,0,2,1,true,false,bek mup,gemini-3.5-flash-lite,2026-11-03T05:05:35.170Z
+adj,2,5,0,2,5,true,false,bek tiv,gemini-3.5-flash-lite,2026-11-03T05:05:35.776Z
+adj,3,1,0,3,1,true,false,sef mup,gemini-3.5-flash-lite,2026-11-03T05:05:39.513Z
+adj,3,0,0,5,5,false,false,Based on the examples: - **Shape:** - Cross = `tiv` (Ex 1  1,gemini-3.5-flash-lite,2026-11-03T05:05:41.253Z
+adj,3,2,0,3,2,true,false,sef pav,gemini-3.5-flash-lite,2026-11-03T05:05:45.874Z
+adj,4,0,0,4,0,true,false,zor nim,gemini-3.5-flash-lite,2026-11-03T05:05:46.173Z
+adj,4,3,0,4,3,true,false,zor dax,gemini-3.5-flash-lite,2026-11-03T05:05:52.057Z
+adj,4,2,0,4,2,true,false,Name: zor pav,gemini-3.5-flash-lite,2026-11-03T05:05:55.387Z
+adj,5,0,0,5,0,true,false,jom nim,gemini-3.5-flash-lite,2026-11-03T05:06:27.448Z
+adj,5,3,0,5,3,true,false,jom dax,gemini-3.5-flash-lite,2026-11-03T05:06:30.816Z
+adj,5,4,0,4,5,false,true,zor tiv,gemini-3.5-flash-lite,2026-11-03T05:06:33.902Z
+noun,0,2,0,0,2,true,false,pav wug,gemini-3.5-flash-lite,2026-11-03T05:06:39.366Z
+noun,0,1,0,1,0,false,true,nim rux,gemini-3.5-flash-lite,2026-11-03T05:06:41.877Z
+noun,0,4,0,4,0,false,true,nim zor,gemini-3.5-flash-lite,2026-11-03T05:06:46.585Z
+noun,0,3,0,3,0,false,true,nim sef,gemini-3.5-flash-lite,2026-11-03T05:06:48.132Z
+noun,0,5,0,5,0,false,true,nim jom,gemini-3.5-flash-lite,2026-11-03T05:06:51.403Z
+noun,1,0,0,0,1,false,true,mup wug,gemini-3.5-flash-lite,2026-11-03T05:06:52.832Z
+noun,1,4,0,4,1,false,true,mup zor,gemini-3.5-flash-lite,2026-11-03T05:06:57.182Z
+noun,1,5,0,1,5,true,false,tiv rux,gemini-3.5-flash-lite,2026-11-03T05:06:57.759Z
+noun,2,0,0,0,2,false,true,pav wug,gemini-3.5-flash-lite,2026-11-03T05:07:02.617Z
+noun,2,1,0,2,1,true,false,mup bek,gemini-3.5-flash-lite,2026-11-03T05:07:04.207Z
+noun,2,5,0,5,2,false,true,pav jom,gemini-3.5-flash-lite,2026-11-03T05:07:06.463Z
+noun,3,0,0,0,3,false,true,dax wug,gemini-3.5-flash-lite,2026-11-03T05:07:07.997Z
+noun,3,1,0,1,3,false,true,dax rux,gemini-3.5-flash-lite,2026-11-03T05:07:10.038Z
+noun,3,2,0,2,3,false,true,dax bek,gemini-3.5-flash-lite,2026-11-03T05:07:11.982Z
+noun,4,2,0,4,2,true,false,pav zor,gemini-3.5-flash-lite,2026-11-03T05:07:15.671Z
+noun,4,3,0,4,3,true,false,dax zor,gemini-3.5-flash-lite,2026-11-03T05:07:19.766Z
+noun,4,0,0,0,4,false,true,kib wug,gemini-3.5-flash-lite,2026-11-03T05:07:21.094Z
+noun,5,0,0,0,5,false,true,tiv wug,gemini-3.5-flash-lite,2026-11-03T05:07:24.585Z
+noun,5,3,0,3,5,false,true,tiv sef,gemini-3.5-flash-lite,2026-11-03T05:07:25.143Z
+noun,5,4,0,4,5,false,true,tiv zor,gemini-3.5-flash-lite,2026-11-03T05:07:29.298Z

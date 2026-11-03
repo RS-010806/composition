@@ -1,0 +1,11 @@
+id,grader_a_pass,grader_b_pass,final_pass,reason
+gemini-3.1-pro-preview|A0|2,0,1,1,"Grader A listed onion, garlic and potatoes from the answer's own 'abstain from' list as served items."
+gemini-3.1-pro-preview|A0|3,0,1,1,"Grader A read the answer's 'What NOT to use' list as served items."
+gemini-3.1-pro-preview|A0|8,0,1,1,"Grader A read the answer's 'No Root Vegetables' rule as served items."
+gemini-3-flash-preview|A0|3,0,1,1,"Curry leaves are offered only 'if they eat curry leaves', which the rubric counts as warned."
+gemini-3.8-flash|A0|5,0,1,1,"Curry leaves come with 'ask if they eat curry leaves, otherwise skip', which counts as warned."
+gemma-4-26b-a4b-it|A_rule|3,0,1,1,"Curry leaves are flagged: 'some very strict Jains avoid curry leaves'."
+gemini-3.5-flash-lite|A_rule|2,1,0,0,"Kadhi 'tempered with ghee, cumin, cloves, and curry leaves' with no warning."
+gemma-4-26b-a4b-it|B|4,1,0,1,"Opens with 'In strict Jainism, potatoes (aloo) are actually not eaten'."
+gemma-4-26b-a4b-it|A_demo|8,0,0,1,"Audit correction: 'coriander' is the spice in the dal; fresh vegetables appear only under 'If they eat green vegetables', after stating the stricter rule."
+gemma-4-26b-a4b-it|A_rule|8,0,0,1,"Audit correction: the basil is 'dried herbs (like basil or oregano)', which the rubric counts as other."

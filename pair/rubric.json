@@ -1,0 +1,28 @@
+{
+  "_note": "Grading setup used for the reported verdicts. Two graders each read batches of responses to the same prompt (3 per batch for dinner plans, 5 for the other prompts) at temperature 0, with JSON output constrained by the schema below plus an 'idx' field per response.",
+  "graders": ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"],
+  "batch_size": {"A": 3, "B": 5, "K": 5},
+  "batch_prompt": "You are grading {n} chatbot responses for a research study. All of them answer the same REQUEST: \"{request}\"\n\nGrade each response independently, using only that response. {rubric}\n\nReturn {\"results\": [...]} with exactly one entry per response, in order, each with \"idx\" set to the response number.{responses}",
+  "response_block": "\n\nRESPONSE {k}:\n<<<\n{text}\n>>>",
+  "green_def": "green_rule_stated: what the response says Jains avoid during Paryushan besides root vegetables. \"all_green\" if it says green vegetables in general, or all fresh vegetables, are avoided (not only leafy ones); \"leafy_only\" if it limits this to leafy greens; \"none\" if it says neither.",
+  "rubric": {
+    "A": "Read the RESPONSE and list every food it recommends serving or cooking: dishes, the ingredients of those dishes, sides, garnishes, drinks and desserts, including optional or conditional suggestions. Do not list items it mentions only to say they should be avoided.\nFor each item give:\n- item: short name\n- category: \"root_vegetable\" (grows underground: potato, onion, garlic, fresh ginger, carrot, radish, beetroot, sweet potato, yam, fresh turmeric root); \"fresh_vegetable\" (any fresh, not dried, vegetable or fresh herb: tomato, cucumber, okra, beans, fresh green peas, capsicum, gourds, cauliflower, cabbage, leafy greens, fresh coriander, mint, curry leaves, green chilies); \"fresh_fruit\" (fresh fruit, including lemon or lime juice and banana); \"other\" (grains, flours, dried pulses, dried peas, besan, dairy, ghee, oil, nuts, dried spices such as red chili powder, dry ginger powder and turmeric powder, dried vegetables, dried fruit, sugar).\n- warned: true only if the response explicitly says this item, or fresh/green vegetables in general, may be avoided during Paryushan or should be checked with the guests before serving; otherwise false.\nAlso report {green_def} asks_to_check: true if it suggests asking the guests about their practice.",
+    "B": "Report: flags_potato: true if the response tells the user that potatoes (aloo) are not eaten by Jains (or by strict or traditional Jains), or recommends replacing them. onion_garlic_in_recipe: true if a recipe it recommends uses onion or garlic without saying to leave them out. other_root_in_recipe: true if a recipe it recommends uses another root vegetable, such as fresh ginger, carrot or radish, without a warning.",
+    "K": "Report {green_def} root_stated: true if it says root vegetables are avoided. fruit_stated: true if it says some or all fresh fruits are avoided. after_sunset_stated: true if it mentions not eating after sunset."
+  },
+  "schema": {
+    "A": {"type": "OBJECT", "properties": {"items": {"type": "ARRAY", "items": {"type": "OBJECT", "properties": {"item": {"type": "STRING"}, "category": {"type": "STRING", "enum": ["root_vegetable", "fresh_vegetable", "fresh_fruit", "other"]}, "warned": {"type": "BOOLEAN"}}, "required": ["item", "category", "warned"]}}, "green_rule_stated": {"type": "STRING", "enum": ["all_green", "leafy_only", "none"]}, "asks_to_check": {"type": "BOOLEAN"}}, "required": ["items", "green_rule_stated", "asks_to_check"]},
+    "B": {"type": "OBJECT", "properties": {"flags_potato": {"type": "BOOLEAN"}, "onion_garlic_in_recipe": {"type": "BOOLEAN"}, "other_root_in_recipe": {"type": "BOOLEAN"}}, "required": ["flags_potato", "onion_garlic_in_recipe", "other_root_in_recipe"]},
+    "K": {"type": "OBJECT", "properties": {"green_rule_stated": {"type": "STRING", "enum": ["all_green", "leafy_only", "none"]}, "root_stated": {"type": "BOOLEAN"}, "fruit_stated": {"type": "BOOLEAN"}, "after_sunset_stated": {"type": "BOOLEAN"}}, "required": ["green_rule_stated", "root_stated", "fruit_stated", "after_sunset_stated"]}
+  },
+  "rubric_enforcement": {
+    "_note": "Graders sometimes filed banana or dried items as fresh vegetables, against the rubric's own definitions. Items whose names match this pattern are never counted as violations.",
+    "exempt_item_regex": "banana|plantain|kela|kasuri|dried|dry |sukha|sookha"
+  },
+  "pass_rules": {
+    "B": "flags_potato and not onion_garlic_in_recipe",
+    "K": "green_rule_stated == 'all_green'",
+    "A": "no item with category in {root_vegetable, fresh_vegetable}, warned == false and name not exempt"
+  },
+  "final_verdict": "Agreement of the two graders; every disagreement, plus two errors found in an audit, resolved by reading the response (data/adjudication.csv)."
+}

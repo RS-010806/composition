@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Composition after pretraining</title>
+<style>
+  @page { size: A4; margin: 12mm 13mm 11mm 13mm; }
+  :root { --ink: #1f2328; --muted: #57606a; --line: #d0d7de; --green: #1a7f37; --red: #cf222e; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; color: var(--ink); }
+  body { font-family: Inter, "Helvetica Neue", Arial, sans-serif; font-size: 8.8pt; line-height: 1.4; }
+  .page { break-after: page; }
+  .page:last-child { break-after: auto; }
+  h1 { font-size: 17pt; line-height: 1.15; margin: 0 0 1.2mm 0; font-weight: 700; letter-spacing: -0.2px; }
+  h2 { font-size: 10pt; margin: 3.4mm 0 1.2mm 0; font-weight: 700; }
+  .byline { color: var(--muted); font-size: 8.4pt; margin-bottom: 3mm; }
+  .byline a { color: var(--muted); text-decoration: none; }
+  p { margin: 0 0 1.6mm 0; }
+  .lead { font-size: 9.6pt; line-height: 1.45; margin-bottom: 2.4mm; }
+  img { width: 100%; display: block; }
+  .cap { color: var(--muted); font-size: 7.6pt; line-height: 1.35; margin: 1.2mm 0 0 0; }
+  ol, ul { margin: 0 0 1.4mm 0; padding-left: 4.6mm; }
+  li { margin: 0 0 1.25mm 0; }
+  b { font-weight: 650; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .box { border-left: 2px solid var(--line); padding-left: 3mm; }
+  table { border-collapse: collapse; width: 100%; font-size: 8.2pt; margin: 0.6mm 0 1.6mm 0; }
+  th, td { text-align: left; padding: 0.9mm 1.6mm 0.9mm 0; border-bottom: 1px solid #eaeef2; vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .refs { color: var(--muted); font-size: 7.8pt; }
+  .refs p { margin-bottom: 1mm; }
+  .k { color: var(--green); font-weight: 650; }
+  .bad { color: var(--red); font-weight: 650; }
+  .narrow { width: 78%; margin: 0 auto; }
+</style>
+</head>
+<body>
+
+<section class="page">
+  <h1>Composition after pretraining</h1>
+  <div class="byline">Rishi Ashish Shah &middot; November 2026 &middot; <a href="https://github.com/RS-010806/composition">github.com/RS-010806/composition</a></div>
+
+  <p class="lead">If a model knows &ldquo;red&rdquo; and &ldquo;rectangle&rdquo;, can a few examples teach it every color-shape combination, so that the examples needed grow as <b>colors plus shapes</b> rather than <b>colors times shapes</b>? Exploiting this during large-scale pretraining is hard, so I tested the two later stages where it could be used: <b>post-training</b> and <b>in-context learning</b>.</p>
+
+  <img src="../results/composition_figure_wide.png" alt="Four bar charts of never-seen combinations named correctly">
+  <p class="cap">Share of never-seen combinations named correctly (color and shape both right). (a) Small CNN trained from scratch on 26 combinations, 5 seeds. (b) Ridge heads on frozen Gemini image embeddings (<i>gemini-embedding-2</i>), 20 seeds; error bars are sd over seeds. (c) Gemini 3.5 Flash-Lite with 11 labeled examples in made-up words; labels give exact names out of trials. (d) Heads from (b) trained on confounded examples plus 20 images labeled by Gemini 3.5 Flash-Lite in context; scored on 160 images of the 10 held-out combinations.</p>
+
+  <div class="grid2" style="margin-top:3mm">
+    <div>
+      <h2 style="margin-top:0">Setup</h2>
+      <p><b>Grid.</b> 6 colors &times; 6 shapes = 36 combinations. Ten are held out of every training set, example set and unlabeled pool, and used only for scoring.</p>
+      <table>
+        <tr><th>Example set</th><th>Combinations</th><th>Property</th></tr>
+        <tr><td><b>cross</b></td><td>11: one full row and one full column</td><td>every color and shape, none tied to one partner</td></tr>
+        <tr><td><b>random</b></td><td>11 of the 26 shown</td><td>same budget, no design</td></tr>
+        <tr><td><b>confounded</b></td><td>6: each color with one shape</td><td>every word, but attributes never vary independently</td></tr>
+      </table>
+      <p><b>Settings.</b> (a) a small JAX CNN with color and shape heads, trained on 12,000 images; (b) linear heads on frozen Gemini image embeddings, with one label per attribute or one per combination; (c) in context, with made-up two-word names (&ldquo;dax wug&rdquo;) that must be learned from the examples, color word or shape word first; (d) in-context labels used as post-training data.</p>
+    </div>
+    <div>
+      <h2 style="margin-top:0">Findings</h2>
+      <ol>
+        <li><b>After pretraining, 11 examples cover the grid.</b> The cross gives <span class="k">100%</span> in post-training (20/20 seeds, all 25 other combinations) and <span class="k">64/64</span> in context across Gemini 3.5 Flash-Lite, Gemini 3.1 Flash-Lite and Gemma 4 26B-A4B. A CNN trained from scratch on 26 combinations gets <span class="bad">30%</span>: colors right (98%), shapes not (31%).</li>
+        <li><b>Which combinations matters more than how many.</b> Random 11 reach 82%. Confounded 6 reach <span class="bad">0%</span> in post-training, since the labels never say which word names which attribute. One label per combination also gets 0%.</li>
+        <li><b>In context, the language prior fills the gap.</b> With confounded examples, all 64 answers follow one of the two readings the examples allow, and 54/64 take the first word as the color, as in English: right when the language puts color first (27/32), wrong when it puts shape first (5/32).</li>
+        <li><b>In-context labels work as post-training data.</b> Labels from the model in context (16/20 right) lift confounded post-training from <span class="bad">0%</span> to <span class="k">100%</span>. With the word order reversed, the labels (5/20 right, 15 swapped) pass the error on: 1%, with color and shape swapped on 92% of images.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2>What it means</h2>
+  <p>Composition is cheap after pretraining, not before it: <b>C + S &minus; 1 examples cover C &times; S combinations</b>, provided the examples are deconfounded and the targets are factorized (one label per attribute). Where post-training data are confounded, as natural data usually are, the model&rsquo;s own in-context labels can fill the gap, and they carry its priors with them.</p>
+
+  <h2>Next</h2>
+  <p>The pilot is a perception version of the augmentation in Lampinen et al. (2025), who found that in-context learning generalizes more flexibly than fine-tuning and improved fine-tuning by adding in-context inferences to its data. Next: real attribute-object pairs that natural data confound (material and object in images, verb and object in video), and compounds whose parts change each other&rsquo;s meaning (&ldquo;red wine&rdquo;, &ldquo;fake gun&rdquo;), where an additive prior should fail. The open question is when the in-context prior can be trusted to fill gaps in post-training data.</p>
+
+</section>
+
+<section class="page">
+  <h1>The Jain pair on the newest Gemini models</h1>
+  <div class="byline">Part 2 &middot; details in <a href="https://github.com/RS-010806/composition/tree/main/pair">pair/</a></div>
+
+  <p class="lead">Two dinner requests for Jain guests. The textbook one (&ldquo;a quick aloo matar recipe&rdquo;) needs the root-vegetable rule: no potatoes. The rarer one (&ldquo;dinner during Paryushan&rdquo;) needs a festival rule on top: many families give up all fresh vegetables and cook from dried or stored food.</p>
+
+  <div class="narrow"><img src="../pair/results/figure.png" alt="Pass rates for each model and condition"></div>
+  <p class="cap">Passing responses out of samples. A dinner plan passes if it serves no root or fresh vegetables, or flags each one to check with the guests. &middot; = not run. &dagger; = run through Google AI Studio. Each response was graded by two LLM graders (they agreed on 235 of 243); every disagreement was resolved by reading the response.</p>
+
+  <h2>Findings</h2>
+  <ol>
+    <li><b>The newest Flash model applies the rarer rule; the newest Flash-Lite still does not.</b> Gemini 3.8 Flash applies it in <span class="k">10/10</span> dinner plans (3 Flash 10/10, 3.1 Pro 9/9). Gemini 3.5 Flash-Lite applies it in <span class="bad">0/10</span> (3.1 Flash-Lite 0/10, Gemma 4 0/10). The small models do handle the textbook rule (27/30).</li>
+    <li><b>The rule is missing, not the reasoning.</b> Asked directly what Jains avoid during Paryushan, the small models state the stricter rule in 1/30 answers (most say only &ldquo;green leafy vegetables&rdquo;); the larger models do in 12/12.</li>
+    <li><b>Context helps; thinking and examples do not.</b> One sentence stating the rule lifts Gemma 4 to 10/10 and 3.1 Flash-Lite to 7/10. A high thinking level gives 0/20, and a worked example of combining kosher and Passover rules gives 1/30.</li>
+    <li><b>The newest small model also misfiles a category.</b> Given the rule, 3.5 Flash-Lite restates it in 10/10 answers, yet 8/10 menus still add fresh curry leaves to the tempering.</li>
+  </ol>
+
+  <h2>How the two parts connect</h2>
+  <p>Both point the same way. Composition is cheap when the parts are already known: 11 examples cover 36 combinations after pretraining, and once the rarer rule is supplied in context, Gemma 4 combines it with the dinner request in 10 of 10 answers. It fails when a part is missing, as the festival rule is in the small models, and more thinking does not recover it (0/20 at a high thinking level).</p>
+
+  <h2>Method</h2>
+  <p>Gemini API with model-default settings and no search grounding, 2 and 3 November 2026; 10 samples per model and prompt where the free tier allowed (exceptions are visible in the table). The graders, Gemini 3.5 and 3.1 Flash-Lite, list each recommended food and classify it at temperature 0; verdicts then follow fixed rules.</p>
+
+  <h2>Caveats</h2>
+  <p>Part 1: synthetic images on a 6 &times; 6 grid; post-training means light heads on frozen embeddings, not fine-tuning the model; 8 to 16 in-context trials per cell with one prompt template; the pilot uses one image per unlabeled combination and one teacher model. Part 2: 10 samples per cell and one wording per prompt; the graders are small models, checked by hand on every disagreement.</p>
+
+  <h2>References</h2>
+  <div class="refs">
+    <p>A. K. Lampinen, A. Chaudhry, S. C. Y. Chan, C. Wild, D. Wan, A. Ku, J. Bornschein, R. Pascanu, M. Shanahan, J. L. McClelland. On the generalization of language models from in-context learning and finetuning: a controlled study. arXiv:2505.00661, 2025.</p>
+    <p>Paryushan practice: JainGPT, &ldquo;What Jains Eat During Paryushan&rdquo; (jaingpt.com/guides/paryushan-food-rules); Wikipedia, &ldquo;Jain vegetarianism&rdquo; (the narrower leafy-greens reading).</p>
+    <p>Code, data and per-run results: github.com/RS-010806/composition (MIT License).</p>
+  </div>
+</section>
+
+</body>
+</html>

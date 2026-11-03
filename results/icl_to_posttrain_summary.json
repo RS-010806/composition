@@ -1,0 +1,72 @@
+{
+ "labeled_only": {
+  "compound": 0,
+  "color": 0.5625,
+  "shape": 0.4375,
+  "swapped": 0,
+  "n": 160
+ },
+ "adj": {
+  "teacher": {
+   "n": 20,
+   "usable": 20,
+   "right": 16,
+   "swapped": 2
+  },
+  "student": {
+   "compound": 1,
+   "color": 1,
+   "shape": 1,
+   "swapped": 0,
+   "n": 160
+  },
+  "oracle_same_images": {
+   "compound": 1,
+   "color": 1,
+   "shape": 1,
+   "swapped": 0,
+   "n": 160
+  }
+ },
+ "noun": {
+  "teacher": {
+   "n": 20,
+   "usable": 20,
+   "right": 5,
+   "swapped": 15
+  },
+  "student": {
+   "compound": 0.0125,
+   "color": 0.03125,
+   "shape": 0.05625,
+   "swapped": 0.925,
+   "n": 160
+  },
+  "oracle_same_images": {
+   "compound": 1,
+   "color": 1,
+   "shape": 1,
+   "swapped": 0,
+   "n": 160
+  }
+ },
+ "_note": "Student = ridge heads on frozen gemini-embedding-2 image embeddings, trained on 108 labeled images of the 6 confounded combinations plus one teacher-labeled image of each of the other 20 shown combinations; scored on 160 images of the 10 held-out combinations. Teacher = gemini-3.5-flash-lite with 11 labeled confounded examples in context. Made-up words: color words wug rux bek sef zor jom, shape words nim mup pav dax kib tiv.",
+ "words": {
+  "color": [
+   "wug",
+   "rux",
+   "bek",
+   "sef",
+   "zor",
+   "jom"
+  ],
+  "shape": [
+   "nim",
+   "mup",
+   "pav",
+   "dax",
+   "kib",
+   "tiv"
+  ]
+ }
+}

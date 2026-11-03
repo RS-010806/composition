@@ -1,0 +1,742 @@
+{
+ "config": {
+  "out": "results/scratch_cnn.json",
+  "seeds": 5,
+  "p_home": [
+   -1.0,
+   0.95
+  ],
+  "designs": [
+   "none",
+   "correlated",
+   "cross",
+   "all26"
+  ],
+  "n_pretrain": 12000,
+  "pre_epochs": 5,
+  "post_epochs": 30,
+  "budget": [
+   220
+  ]
+ },
+ "held_out": [
+  [
+   1,
+   2
+  ],
+  [
+   1,
+   3
+  ],
+  [
+   2,
+   3
+  ],
+  [
+   2,
+   4
+  ],
+  [
+   3,
+   4
+  ],
+  [
+   3,
+   5
+  ],
+  [
+   4,
+   1
+  ],
+  [
+   4,
+   5
+  ],
+  [
+   5,
+   1
+  ],
+  [
+   5,
+   2
+  ]
+ ],
+ "cross": [
+  [
+   0,
+   0
+  ],
+  [
+   0,
+   1
+  ],
+  [
+   0,
+   2
+  ],
+  [
+   0,
+   3
+  ],
+  [
+   0,
+   4
+  ],
+  [
+   0,
+   5
+  ],
+  [
+   1,
+   0
+  ],
+  [
+   2,
+   0
+  ],
+  [
+   3,
+   0
+  ],
+  [
+   4,
+   0
+  ],
+  [
+   5,
+   0
+  ]
+ ],
+ "runs": [
+  {
+   "p_home": -1.0,
+   "budget": 220,
+   "seed": 0,
+   "results": {
+    "none": {
+     "held_out": {
+      "compound_acc": 0.3225,
+      "color_acc": 0.9925,
+      "shape_acc": 0.33,
+      "shortcut_rate": 0.15375
+     },
+     "seen": {
+      "compound_acc": 0.9918269230769231,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9923076923076923,
+      "shortcut_rate": 0.22596153846153846
+     }
+    },
+    "correlated": {
+     "held_out": {
+      "compound_acc": 0.275,
+      "color_acc": 0.99625,
+      "shape_acc": 0.27625,
+      "shortcut_rate": 0.19375
+     },
+     "seen": {
+      "compound_acc": 0.9875,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9879807692307693,
+      "shortcut_rate": 0.22596153846153846
+     }
+    },
+    "cross": {
+     "held_out": {
+      "compound_acc": 0.2175,
+      "color_acc": 0.96375,
+      "shape_acc": 0.24875,
+      "shortcut_rate": 0.1075
+     },
+     "seen": {
+      "compound_acc": 0.9144230769230769,
+      "color_acc": 1.0,
+      "shape_acc": 0.9144230769230769,
+      "shortcut_rate": 0.21394230769230768
+     }
+    },
+    "all26": {
+     "held_out": {
+      "compound_acc": 0.3775,
+      "color_acc": 0.99375,
+      "shape_acc": 0.38125,
+      "shortcut_rate": 0.155
+     },
+     "seen": {
+      "compound_acc": 0.9923076923076923,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9927884615384616,
+      "shortcut_rate": 0.23076923076923078
+     }
+    }
+   }
+  },
+  {
+   "p_home": -1.0,
+   "budget": 220,
+   "seed": 1,
+   "results": {
+    "none": {
+     "held_out": {
+      "compound_acc": 0.3625,
+      "color_acc": 0.97375,
+      "shape_acc": 0.38625,
+      "shortcut_rate": 0.1875
+     },
+     "seen": {
+      "compound_acc": 0.9918269230769231,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9923076923076923,
+      "shortcut_rate": 0.23173076923076924
+     }
+    },
+    "correlated": {
+     "held_out": {
+      "compound_acc": 0.44375,
+      "color_acc": 0.9875,
+      "shape_acc": 0.45625,
+      "shortcut_rate": 0.12375
+     },
+     "seen": {
+      "compound_acc": 0.9927884615384616,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9932692307692308,
+      "shortcut_rate": 0.23028846153846153
+     }
+    },
+    "cross": {
+     "held_out": {
+      "compound_acc": 0.29625,
+      "color_acc": 0.985,
+      "shape_acc": 0.30875,
+      "shortcut_rate": 0.09875
+     },
+     "seen": {
+      "compound_acc": 0.8870192307692307,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.8870192307692307,
+      "shortcut_rate": 0.22115384615384615
+     }
+    },
+    "all26": {
+     "held_out": {
+      "compound_acc": 0.43125,
+      "color_acc": 0.9875,
+      "shape_acc": 0.4425,
+      "shortcut_rate": 0.1175
+     },
+     "seen": {
+      "compound_acc": 0.9951923076923077,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9956730769230769,
+      "shortcut_rate": 0.23317307692307693
+     }
+    }
+   }
+  },
+  {
+   "p_home": -1.0,
+   "budget": 220,
+   "seed": 2,
+   "results": {
+    "none": {
+     "held_out": {
+      "compound_acc": 0.10875,
+      "color_acc": 0.95875,
+      "shape_acc": 0.1275,
+      "shortcut_rate": 0.21375
+     },
+     "seen": {
+      "compound_acc": 0.9418269230769231,
+      "color_acc": 0.9932692307692308,
+      "shape_acc": 0.9485576923076923,
+      "shortcut_rate": 0.20961538461538462
+     }
+    },
+    "correlated": {
+     "held_out": {
+      "compound_acc": 0.24125,
+      "color_acc": 0.9825,
+      "shape_acc": 0.24875,
+      "shortcut_rate": 0.21375
+     },
+     "seen": {
+      "compound_acc": 0.9875,
+      "color_acc": 0.9990384615384615,
+      "shape_acc": 0.9884615384615385,
+      "shortcut_rate": 0.2298076923076923
+     }
+    },
+    "cross": {
+     "held_out": {
+      "compound_acc": 0.20125,
+      "color_acc": 0.96625,
+      "shape_acc": 0.22125,
+      "shortcut_rate": 0.06625
+     },
+     "seen": {
+      "compound_acc": 0.7870192307692307,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.7875,
+      "shortcut_rate": 0.1519230769230769
+     }
+    },
+    "all26": {
+     "held_out": {
+      "compound_acc": 0.2375,
+      "color_acc": 0.98875,
+      "shape_acc": 0.24625,
+      "shortcut_rate": 0.2275
+     },
+     "seen": {
+      "compound_acc": 0.9889423076923077,
+      "color_acc": 1.0,
+      "shape_acc": 0.9889423076923077,
+      "shortcut_rate": 0.2298076923076923
+     }
+    }
+   }
+  },
+  {
+   "p_home": -1.0,
+   "budget": 220,
+   "seed": 3,
+   "results": {
+    "none": {
+     "held_out": {
+      "compound_acc": 0.34125,
+      "color_acc": 0.97,
+      "shape_acc": 0.36875,
+      "shortcut_rate": 0.1475
+     },
+     "seen": {
+      "compound_acc": 0.9927884615384616,
+      "color_acc": 1.0,
+      "shape_acc": 0.9927884615384616,
+      "shortcut_rate": 0.23076923076923078
+     }
+    },
+    "correlated": {
+     "held_out": {
+      "compound_acc": 0.315,
+      "color_acc": 0.96875,
+      "shape_acc": 0.34,
+      "shortcut_rate": 0.1375
+     },
+     "seen": {
+      "compound_acc": 0.9875,
+      "color_acc": 1.0,
+      "shape_acc": 0.9875,
+      "shortcut_rate": 0.22596153846153846
+     }
+    },
+    "cross": {
+     "held_out": {
+      "compound_acc": 0.26625,
+      "color_acc": 0.97,
+      "shape_acc": 0.2925,
+      "shortcut_rate": 0.13625
+     },
+     "seen": {
+      "compound_acc": 0.9,
+      "color_acc": 1.0,
+      "shape_acc": 0.9,
+      "shortcut_rate": 0.21875
+     }
+    },
+    "all26": {
+     "held_out": {
+      "compound_acc": 0.35625,
+      "color_acc": 0.98875,
+      "shape_acc": 0.36625,
+      "shortcut_rate": 0.10625
+     },
+     "seen": {
+      "compound_acc": 0.9908653846153846,
+      "color_acc": 1.0,
+      "shape_acc": 0.9908653846153846,
+      "shortcut_rate": 0.2283653846153846
+     }
+    }
+   }
+  },
+  {
+   "p_home": -1.0,
+   "budget": 220,
+   "seed": 4,
+   "results": {
+    "none": {
+     "held_out": {
+      "compound_acc": 0.35875,
+      "color_acc": 0.99625,
+      "shape_acc": 0.36125,
+      "shortcut_rate": 0.145
+     },
+     "seen": {
+      "compound_acc": 0.9927884615384616,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9932692307692308,
+      "shortcut_rate": 0.22932692307692307
+     }
+    },
+    "correlated": {
+     "held_out": {
+      "compound_acc": 0.36375,
+      "color_acc": 0.99625,
+      "shape_acc": 0.365,
+      "shortcut_rate": 0.14
+     },
+     "seen": {
+      "compound_acc": 0.9850961538461539,
+      "color_acc": 0.9990384615384615,
+      "shape_acc": 0.9860576923076924,
+      "shortcut_rate": 0.22692307692307692
+     }
+    },
+    "cross": {
+     "held_out": {
+      "compound_acc": 0.28375,
+      "color_acc": 0.9825,
+      "shape_acc": 0.29625,
+      "shortcut_rate": 0.13625
+     },
+     "seen": {
+      "compound_acc": 0.8870192307692307,
+      "color_acc": 0.9985576923076923,
+      "shape_acc": 0.8884615384615384,
+      "shortcut_rate": 0.19903846153846153
+     }
+    },
+    "all26": {
+     "held_out": {
+      "compound_acc": 0.43125,
+      "color_acc": 0.99875,
+      "shape_acc": 0.4325,
+      "shortcut_rate": 0.07875
+     },
+     "seen": {
+      "compound_acc": 0.9855769230769231,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9860576923076924,
+      "shortcut_rate": 0.2326923076923077
+     }
+    }
+   }
+  },
+  {
+   "p_home": 0.95,
+   "budget": 220,
+   "seed": 0,
+   "results": {
+    "none": {
+     "held_out": {
+      "compound_acc": 0.1,
+      "color_acc": 0.98125,
+      "shape_acc": 0.11625,
+      "shortcut_rate": 0.43
+     },
+     "seen": {
+      "compound_acc": 0.8807692307692307,
+      "color_acc": 0.9975961538461539,
+      "shape_acc": 0.8822115384615384,
+      "shortcut_rate": 0.3038461538461538
+     }
+    },
+    "correlated": {
+     "held_out": {
+      "compound_acc": 0.0825,
+      "color_acc": 0.975,
+      "shape_acc": 0.10125,
+      "shortcut_rate": 0.48875
+     },
+     "seen": {
+      "compound_acc": 0.7841346153846154,
+      "color_acc": 0.989423076923077,
+      "shape_acc": 0.791826923076923,
+      "shortcut_rate": 0.35721153846153847
+     }
+    },
+    "cross": {
+     "held_out": {
+      "compound_acc": 0.12625,
+      "color_acc": 0.85625,
+      "shape_acc": 0.23875,
+      "shortcut_rate": 0.1325
+     },
+     "seen": {
+      "compound_acc": 0.7024038461538461,
+      "color_acc": 0.9692307692307692,
+      "shape_acc": 0.7288461538461538,
+      "shortcut_rate": 0.19326923076923078
+     }
+    },
+    "all26": {
+     "held_out": {
+      "compound_acc": 0.175,
+      "color_acc": 0.99125,
+      "shape_acc": 0.1825,
+      "shortcut_rate": 0.2875
+     },
+     "seen": {
+      "compound_acc": 0.9572115384615385,
+      "color_acc": 1.0,
+      "shape_acc": 0.9572115384615385,
+      "shortcut_rate": 0.23365384615384616
+     }
+    }
+   }
+  },
+  {
+   "p_home": 0.95,
+   "budget": 220,
+   "seed": 1,
+   "results": {
+    "none": {
+     "held_out": {
+      "compound_acc": 0.1125,
+      "color_acc": 0.91,
+      "shape_acc": 0.1975,
+      "shortcut_rate": 0.4525
+     },
+     "seen": {
+      "compound_acc": 0.86875,
+      "color_acc": 0.9711538461538461,
+      "shape_acc": 0.8899038461538461,
+      "shortcut_rate": 0.28173076923076923
+     }
+    },
+    "correlated": {
+     "held_out": {
+      "compound_acc": 0.29125,
+      "color_acc": 0.98,
+      "shape_acc": 0.31,
+      "shortcut_rate": 0.51875
+     },
+     "seen": {
+      "compound_acc": 0.8370192307692308,
+      "color_acc": 0.9947115384615385,
+      "shape_acc": 0.8413461538461539,
+      "shortcut_rate": 0.33221153846153845
+     }
+    },
+    "cross": {
+     "held_out": {
+      "compound_acc": 0.14125,
+      "color_acc": 0.81625,
+      "shape_acc": 0.3175,
+      "shortcut_rate": 0.1325
+     },
+     "seen": {
+      "compound_acc": 0.8004807692307693,
+      "color_acc": 0.9774038461538461,
+      "shape_acc": 0.8153846153846154,
+      "shortcut_rate": 0.21682692307692308
+     }
+    },
+    "all26": {
+     "held_out": {
+      "compound_acc": 0.30875,
+      "color_acc": 0.965,
+      "shape_acc": 0.34,
+      "shortcut_rate": 0.24875
+     },
+     "seen": {
+      "compound_acc": 0.9725961538461538,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9725961538461538,
+      "shortcut_rate": 0.23173076923076924
+     }
+    }
+   }
+  },
+  {
+   "p_home": 0.95,
+   "budget": 220,
+   "seed": 2,
+   "results": {
+    "none": {
+     "held_out": {
+      "compound_acc": 0.045,
+      "color_acc": 0.99125,
+      "shape_acc": 0.0525,
+      "shortcut_rate": 0.44875
+     },
+     "seen": {
+      "compound_acc": 0.8048076923076923,
+      "color_acc": 0.9975961538461539,
+      "shape_acc": 0.8067307692307693,
+      "shortcut_rate": 0.3557692307692308
+     }
+    },
+    "correlated": {
+     "held_out": {
+      "compound_acc": 0.1425,
+      "color_acc": 0.9875,
+      "shape_acc": 0.15375,
+      "shortcut_rate": 0.61875
+     },
+     "seen": {
+      "compound_acc": 0.6740384615384616,
+      "color_acc": 0.9985576923076923,
+      "shape_acc": 0.6754807692307693,
+      "shortcut_rate": 0.4600961538461538
+     }
+    },
+    "cross": {
+     "held_out": {
+      "compound_acc": 0.09,
+      "color_acc": 0.86,
+      "shape_acc": 0.155,
+      "shortcut_rate": 0.21375
+     },
+     "seen": {
+      "compound_acc": 0.6942307692307692,
+      "color_acc": 0.9855769230769231,
+      "shape_acc": 0.6985576923076923,
+      "shortcut_rate": 0.19230769230769232
+     }
+    },
+    "all26": {
+     "held_out": {
+      "compound_acc": 0.1175,
+      "color_acc": 0.9825,
+      "shape_acc": 0.125,
+      "shortcut_rate": 0.25875
+     },
+     "seen": {
+      "compound_acc": 0.9427884615384615,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9432692307692307,
+      "shortcut_rate": 0.25
+     }
+    }
+   }
+  },
+  {
+   "p_home": 0.95,
+   "budget": 220,
+   "seed": 3,
+   "results": {
+    "none": {
+     "held_out": {
+      "compound_acc": 0.03625,
+      "color_acc": 0.98,
+      "shape_acc": 0.04125,
+      "shortcut_rate": 0.49375
+     },
+     "seen": {
+      "compound_acc": 0.7677884615384616,
+      "color_acc": 0.9980769230769231,
+      "shape_acc": 0.7692307692307693,
+      "shortcut_rate": 0.40528846153846154
+     }
+    },
+    "correlated": {
+     "held_out": {
+      "compound_acc": 0.0625,
+      "color_acc": 0.9775,
+      "shape_acc": 0.07875,
+      "shortcut_rate": 0.655
+     },
+     "seen": {
+      "compound_acc": 0.6370192307692307,
+      "color_acc": 0.9966346153846154,
+      "shape_acc": 0.6399038461538461,
+      "shortcut_rate": 0.49278846153846156
+     }
+    },
+    "cross": {
+     "held_out": {
+      "compound_acc": 0.0825,
+      "color_acc": 0.86625,
+      "shape_acc": 0.11,
+      "shortcut_rate": 0.1725
+     },
+     "seen": {
+      "compound_acc": 0.6519230769230769,
+      "color_acc": 0.975,
+      "shape_acc": 0.6677884615384615,
+      "shortcut_rate": 0.20576923076923076
+     }
+    },
+    "all26": {
+     "held_out": {
+      "compound_acc": 0.06125,
+      "color_acc": 0.985,
+      "shape_acc": 0.0625,
+      "shortcut_rate": 0.195
+     },
+     "seen": {
+      "compound_acc": 0.9514423076923076,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9519230769230769,
+      "shortcut_rate": 0.2375
+     }
+    }
+   }
+  },
+  {
+   "p_home": 0.95,
+   "budget": 220,
+   "seed": 4,
+   "results": {
+    "none": {
+     "held_out": {
+      "compound_acc": 0.08875,
+      "color_acc": 0.98125,
+      "shape_acc": 0.105,
+      "shortcut_rate": 0.54875
+     },
+     "seen": {
+      "compound_acc": 0.7528846153846154,
+      "color_acc": 0.9971153846153846,
+      "shape_acc": 0.7557692307692307,
+      "shortcut_rate": 0.4048076923076923
+     }
+    },
+    "correlated": {
+     "held_out": {
+      "compound_acc": 0.12875,
+      "color_acc": 0.96125,
+      "shape_acc": 0.165,
+      "shortcut_rate": 0.7475
+     },
+     "seen": {
+      "compound_acc": 0.56875,
+      "color_acc": 0.9961538461538462,
+      "shape_acc": 0.5692307692307692,
+      "shortcut_rate": 0.5456730769230769
+     }
+    },
+    "cross": {
+     "held_out": {
+      "compound_acc": 0.105,
+      "color_acc": 0.89375,
+      "shape_acc": 0.1925,
+      "shortcut_rate": 0.11375
+     },
+     "seen": {
+      "compound_acc": 0.6240384615384615,
+      "color_acc": 0.9706730769230769,
+      "shape_acc": 0.6451923076923077,
+      "shortcut_rate": 0.18173076923076922
+     }
+    },
+    "all26": {
+     "held_out": {
+      "compound_acc": 0.17,
+      "color_acc": 0.9925,
+      "shape_acc": 0.1775,
+      "shortcut_rate": 0.28375
+     },
+     "seen": {
+      "compound_acc": 0.9355769230769231,
+      "color_acc": 0.9995192307692308,
+      "shape_acc": 0.9360576923076923,
+      "shortcut_rate": 0.24951923076923077
+     }
+    }
+   }
+  }
+ ]
+}

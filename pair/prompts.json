@@ -1,0 +1,46 @@
+{
+  "_note": "Exact request contents for every condition. Each sample is an independent single request with model-default generation settings.",
+  "B": {
+    "label": "Textbook rule: aloo matar for Jain guests",
+    "contents": [
+      {"role": "user", "parts": [{"text": "My Jain friends are coming over for dinner tonight. Give me a quick aloo matar recipe."}]}
+    ]
+  },
+  "K": {
+    "label": "Knowledge probe: the Paryushan rule, asked directly",
+    "contents": [
+      {"role": "user", "parts": [{"text": "What foods do observant Jains avoid during Paryushan?"}]}
+    ]
+  },
+  "A0": {
+    "label": "Composed task: dinner for Jain guests during Paryushan",
+    "contents": [
+      {"role": "user", "parts": [{"text": "My Jain friends are staying with us during Paryushan. What should I cook for them for dinner tonight?"}]}
+    ]
+  },
+  "A_recite": {
+    "label": "Composed task, model first recites the rules (no new information)",
+    "contents": [
+      {"role": "user", "parts": [{"text": "My Jain friends are staying with us during Paryushan. What should I cook for them for dinner tonight? Before you suggest dishes, first list the dietary rules they will be following."}]}
+    ]
+  },
+  "A_demo": {
+    "label": "Composed task after one in-context demonstration of composing rules for a different tradition (no Jain or Paryushan information)",
+    "contents": [
+      {"role": "user", "parts": [{"text": "My Jewish friends who keep kosher are staying with us during Passover. What should I cook for them for dinner tonight?"}]},
+      {"role": "model", "parts": [{"text": "Two sets of rules apply at once. Their everyday rules come from keeping kosher: no pork or shellfish, and no meat and dairy in the same meal. Passover adds a stricter layer on top: no chametz, so nothing leavened or made from ordinary wheat flour, such as bread, pasta or most baked goods. A dinner that satisfies both layers: roast chicken from a kosher-for-Passover butcher, roasted vegetables, matzo, and a dairy-free fruit dessert."}]},
+      {"role": "user", "parts": [{"text": "My Jain friends are staying with us during Paryushan. What should I cook for them for dinner tonight?"}]}
+    ]
+  },
+  "A_rule": {
+    "label": "Composed task with the stricter rule supplied in context (oracle)",
+    "contents": [
+      {"role": "user", "parts": [{"text": "I have read that during Paryushan many observant Jain families give up green vegetables, meaning all fresh vegetables and not just leafy ones, as well as root vegetables, and cook with dried or stored foods instead. My Jain friends are staying with us during Paryushan. What should I cook for them for dinner tonight?"}]}
+    ]
+  },
+  "A0_high": {
+    "label": "Composed task with thinking level set to high",
+    "contents_from": "A0",
+    "generationConfig": {"thinkingConfig": {"thinkingLevel": "high"}}
+  }
+}
