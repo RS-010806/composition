@@ -16,20 +16,22 @@ import numpy as np
 from scenes import T
 
 # Okabe-Ito colours (colour-blind safe)
-BLUE, GREEN, VERMILION, AMBER, SKY, GREY, INK = "#0072B2", "#009E73", "#D55E00", "#E69F00", "#56B4E9", "#9AA0A6", "#1B1F23"
-ORDER = ["full", "rowcol", "random", "tiedrow", "tied", "row"]
+BLUE, GREEN, VERMILION, AMBER, SKY, PURPLE, GREY, INK = "#0072B2", "#009E73", "#D55E00", "#E69F00", "#56B4E9", "#CC79A7", "#9AA0A6", "#1B1F23"
+ORDER = ["full", "rowcol", "random", "tiedrow", "split", "tied", "row"]
 N2, K = T * T, 2 * T - 1
 NAMES = {
     "full": f"All {N2} combinations\n(D4RT's sampling)",
     "rowcol": f"One row + one column\n({K} of {N2})",
     "random": f"Random\n({K} of {N2})",
     "tiedrow": f"Camera-frame tracks\n+ posed depth ({K} of {N2})",
+    "split": "Tracks + posed depth,\non different clips",
     "tied": f"Camera-frame tracks\nonly ({T} of {N2})",
     "row": f"Posed depth\nonly ({T} of {N2})",
 }
-SHORT = {"full": f"All {N2}", "rowcol": "Row + column", "random": "Random", "tiedrow": "Tracks + depth", "tied": "Tracks only", "row": "Depth only"}
-COLOR = {"full": GREY, "rowcol": GREEN, "random": AMBER, "tiedrow": BLUE, "tied": VERMILION, "row": SKY}
-TEXT = {"full": "#5F6670", "rowcol": "#007A5A", "random": "#A86A00", "tiedrow": "#005A8C", "tied": "#B04700", "row": "#1F78AA"}
+SHORT = {"full": f"All {N2}", "rowcol": "Row + column", "random": "Random", "tiedrow": "Tracks + depth", "split": "Tracks + depth, different clips",
+         "tied": "Tracks only", "row": "Depth only"}
+COLOR = {"full": GREY, "rowcol": GREEN, "random": AMBER, "tiedrow": BLUE, "split": PURPLE, "tied": VERMILION, "row": SKY}
+TEXT = {"full": "#5F6670", "rowcol": "#007A5A", "random": "#A86A00", "tiedrow": "#005A8C", "split": "#9C4E7C", "tied": "#B04700", "row": "#1F78AA"}
 
 plt.rcParams.update({"mathtext.default": "regular", "font.family": "Poppins", "font.size": 8.5, "axes.edgecolor": "#C9CED6", "axes.linewidth": 0.8,
                      "xtick.color": "#4A5059", "ytick.color": "#4A5059", "axes.labelcolor": "#2B3036", "text.color": INK})

@@ -4,9 +4,9 @@ Mean 3D end-point error (scene units; spheres have radius 0.55 to 0.8) on held-o
 
 | Supervision | Combinations per t_src | Seeds | Moving points | Static points | Moving, acc | Static, acc | Tracks in camera 0 (moving) | Seen combinations (moving / static) |
 |---|---|---|---|---|---|---|---|---|
-| All 36 | 36 | 1 | 0.708 ± 0.000 | 0.243 ± 0.000 | 9% | 67% | - | 0.636 / 0.221 |
-| Row + column | 11 | 1 | 0.741 ± 0.000 | 0.211 ± 0.000 | 7% | 74% | 0.662 ± 0.000 | 0.484 / 0.145 |
-| Tracks + depth | 11 | 1 | 0.729 ± 0.000 | 0.218 ± 0.000 | 7% | 72% | 0.649 ± 0.000 | 0.462 / 0.201 |
-| Tracks only | 6 | 1 | 0.835 ± 0.000 | 0.596 ± 0.000 | 6% | 16% | 0.841 ± 0.000 | 0.550 / 0.246 |
+| All 36 | 36 | 3 | 0.710 ± 0.007 | 0.242 ± 0.003 | 9% | 67% | - | 0.637 / 0.220 |
+| Row + column | 11 | 3 | 0.745 ± 0.008 | 0.230 ± 0.018 | 7% | 70% | 0.665 ± 0.007 | 0.491 / 0.156 |
+| Tracks + depth | 11 | 3 | 0.734 ± 0.007 | 0.222 ± 0.009 | 7% | 71% | 0.652 ± 0.004 | 0.469 / 0.205 |
+| Tracks only | 6 | 3 | 0.851 ± 0.014 | 0.617 ± 0.021 | 5% | 15% | 0.876 ± 0.030 | 0.553 / 0.254 |
 
 Baseline that assumes nothing moves (the point where it was, in its own camera): moving 1.180, static 1.003.

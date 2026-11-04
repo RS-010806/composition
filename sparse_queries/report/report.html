@@ -48,9 +48,10 @@
   th, td { text-align: left; padding: 1.15mm 2mm 1.15mm 0; border-bottom: 1px solid var(--line); vertical-align: top; }
   th { color: var(--muted); font-weight: 500; }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  sup, sub { line-height: 0; }
   .refs { font-size: 7.3pt; color: var(--muted); line-height: 1.4; margin-top: 2.4mm; }
   tr.base td { color: var(--muted); }
-  img.fig2 { width: 88%; margin: 1mm auto 0 auto; }
+  img.fig2 { width: 100%; margin: 1mm auto 0 auto; }
   .refs p { margin: 0 0 0.8mm 0; }
 </style>
 </head>
@@ -65,11 +66,11 @@
   <div class="tiles">
     
 <div class="tile"><div class="num">11 <small>of 36</small></div>
-<div class="lab">combinations, one row and one column: error <b>0.21</b> on held-out static points,
+<div class="lab">combinations, one row and one column: error <b>0.23</b> on held-out static points,
 against <b>0.24</b> when all 36 are supervised.</div></div>
-<div class="tile bad"><div class="num">2.4&times; <small>the error</small></div>
+<div class="tile bad"><div class="num">2.5&times; <small>the error</small></div>
 <div class="lab">when only t<sub>tgt</sub> = t<sub>cam</sub> is supervised, as with camera-frame tracks: worse on
-<b>100 of 100</b> test scenes (p &lt; 10<sup>&minus;15</sup>).</div></div>
+<b>100 of 100</b> test scenes and in every seed.</div></div>
 <div class="tile fix"><div class="num">+1 <small>row</small></div>
 <div class="lab">of posed depth (t<sub>tgt</sub> = t<sub>src</sub>) added to those tracks brings the error back to <b>0.22</b>.</div></div>
 
@@ -86,9 +87,9 @@ it does, as long as time and camera vary independently somewhere in the labels.<
 
 <img src="../../results/sparse_queries/end_to_end_error_maps_static.png" alt="Error maps on static points for four label sets">
 <div class="cap"><b>Figure 1.</b> Error on static points by target time (rows) and camera (columns), for points first seen in frame 0 of 100 new
-scenes; mean of 1 models per panel, each trained from scratch with the same number of training queries. Outlined cells were supervised; the
+scenes; mean of 3 models per panel, each trained from scratch with the same number of training queries. Outlined cells were supervised; the
 rest were never seen in training. A static point's position depends only on the camera, so a model that keeps time and camera apart shows
-errors that change across columns but not down them.</div>
+errors that change across columns but not down them. Numbers below the panels: error on all held-out combinations and source frames.</div>
 
 <h2><span class="n">02</span>What I ran</h2>
 <p>A D4RT-style model at small scale, with D4RT's query interface: an encoder over all 6 frames of 32 &times; 32 video (a 3 &times; 3 convolution
@@ -97,7 +98,7 @@ Fourier embedding of (u, v), learned embeddings of t<sub>src</sub>, t<sub>tgt</s
 around (u, v), then cross-attends to the encoder tokens, never to other queries. The clips are synthetic so that every query has exact ground
 truth: a camera slides and pans over a tiled floor with 3 static and 2 moving spheres.</p>
 <p>Each label set restricts which (t<sub>tgt</sub>, t<sub>cam</sub>) cells are supervised for every source frame; all get the same number of
-training queries (5,000 steps of 8 clips &times; 128 queries, half on moving objects) and 1 seeds. Errors are 3D distances in scene units
+training queries (5,000 steps of 8 clips &times; 128 queries, half on moving objects) and 3 seeds. Errors are 3D distances in scene units
 (the spheres have radius 0.55 to 0.8) on 100 new scenes, for combinations with t<sub>src</sub>, t<sub>tgt</sub> and t<sub>cam</sub> all different,
 which none of the sparse label sets contains.</p>
 
@@ -107,30 +108,35 @@ which none of the sparse label sets contains.</p>
   
 <h2 style="margin-top:0"><span class="n">03</span>What I got</h2>
 <table>
-<tr><th>Supervised combinations</th><th class="num">Cells</th><th class="num">Static points</th><th class="num">Difference to all 36 [95% CI]</th><th class="num">Moving points</th></tr>
-<tr><td>All 36 (D4RT's sampling)</td><td class='num'>36</td><td class='num'><b>0.24</b> &plusmn; 0.00</td><td class='num'>reference</td><td class='num'>0.71 &plusmn; 0.00</td></tr><tr><td>One row + one column</td><td class='num'>11</td><td class='num'><b>0.21</b> &plusmn; 0.00</td><td class='num'>-0.03 [-0.04, -0.02]</td><td class='num'>0.74 &plusmn; 0.00</td></tr><tr><td>Camera-frame tracks + posed depth</td><td class='num'>11</td><td class='num'><b>0.22</b> &plusmn; 0.00</td><td class='num'>-0.02 [-0.04, -0.01]</td><td class='num'>0.73 &plusmn; 0.00</td></tr><tr><td>Camera-frame tracks only</td><td class='num'>6</td><td class='num'><b>0.60</b> &plusmn; 0.00</td><td class='num'>+0.35 [+0.32, +0.38]</td><td class='num'>0.83 &plusmn; 0.00</td></tr>
-<tr class="base"><td>Assume nothing moves (baseline)</td><td class="num">&ndash;</td><td class="num">1.00</td><td></td><td class="num">1.18</td></tr>
+<tr><th>Supervised combinations</th><th class="num">Cells</th><th class="num">Static points</th><th class="num">Ratio to all 36 [95% CI]</th><th class="num">Moving points</th><th class="num">Ratio to all 36 [95% CI]</th></tr>
+<tr><td>All 36 (D4RT's sampling)</td><td class='num'>36</td><td class='num'><b>0.242</b> &plusmn; 0.003</td><td class='num'>reference</td><td class='num'>0.710 &plusmn; 0.007</td><td class='num'>reference</td></tr><tr><td>One row + one column</td><td class='num'>11</td><td class='num'><b>0.230</b> &plusmn; 0.018</td><td class='num'>0.95&times; [0.87, 1.03]</td><td class='num'>0.745 &plusmn; 0.008</td><td class='num'>1.05&times; [1.03, 1.07]</td></tr><tr><td>Camera-frame tracks + posed depth</td><td class='num'>11</td><td class='num'><b>0.222</b> &plusmn; 0.009</td><td class='num'>0.92&times; [0.87, 0.98]</td><td class='num'>0.734 &plusmn; 0.007</td><td class='num'>1.03&times; [1.01, 1.06]</td></tr><tr><td>Camera-frame tracks only</td><td class='num'>6</td><td class='num'><b>0.617</b> &plusmn; 0.021</td><td class='num'>2.54&times; [2.37, 2.73]</td><td class='num'>0.851 &plusmn; 0.014</td><td class='num'>1.20&times; [1.15, 1.25]</td></tr>
+<tr class="base"><td>Assume nothing moves (baseline)</td><td class="num">&ndash;</td><td class="num">1.003</td><td></td><td class="num">1.180</td><td></td></tr>
 </table>
-<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over 1 seeds. Differences are per test scene, averaged over seeds, with 95% bootstrap intervals over the
-100 scenes; p-values are two-sided Wilcoxon signed-rank tests.</div>
+<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over 3 seeds. Ratios are errors relative to the all-36 model, with 95% intervals from a bootstrap that
+resamples both the training seeds and the 100 test scenes. p-values in the text are Welch&rsquo;s t-tests across seeds, Holm-corrected across the
+comparisons; scene-level tests are in the repository.</div>
 <ul>
-<li><b>Varying independently is enough.</b> One row and one column, and camera-frame tracks plus posed depth (11 cells each), stay within
-0.04 of the all-36 model on static points (95% intervals above). On moving points they cost 5% and
-3% (p = 1 &times; 10<sup>-4</sup> and p = 0.02).</li>
-<li><b>Tied labels confound time and camera.</b> With only t<sub>tgt</sub> = t<sub>cam</sub>, the static-point error is 2.4 times
-higher (95% CI 2.3 to 2.6), on every one of the 100 test scenes, and it grows with the gap between
-t<sub>tgt</sub> and t<sub>cam</sub> (Figure 1): nothing in the labels says which index sets the camera. Moving points: 18% worse
-(p = 2 &times; 10<sup>-11</sup>).</li>
+<li><b>Varying independently is enough.</b> One row and one column, and camera-frame tracks plus posed depth (11 cells each), are no worse
+than all 36 on static points: error ratios 0.95 and 0.92, with 95% intervals that end at
+1.03 and 0.98. On moving points they cost a small
+5% and 3%, consistent across seeds (p&nbsp;=&nbsp;0.02 and p&nbsp;=&nbsp;0.04).</li>
+<li><b>Tied labels confound time and camera.</b> With only t<sub>tgt</sub> = t<sub>cam</sub>, the static-point error is 2.5 times
+higher (95% CI 2.4 to 2.7), on every one of the 100 test scenes and in every seed
+(p&nbsp;=&nbsp;0.005), and it grows with the gap between
+t<sub>tgt</sub> and t<sub>cam</sub> (Figure 1): nothing in the labels says which index sets the camera. The model reads time as camera motion:
+asked about a static point from one camera at different times, it moves the point by 0.33 units on average, where the other
+models keep it still (0.03 to 0.04).
+Moving points: 20% worse (p&nbsp;=&nbsp;0.005).</li>
 <li><b>One row of posed depth resolves it</b>, with the same number of training queries.</li>
 </ul>
 
 <img class="fig2" src="../../results/sparse_queries/decoder_only_error_maps_static.png" alt="Static-point error maps for six label sets, decoder-only training">
 <div class="cap"><b>Figure 2.</b> The post-training version: a fresh decoder on the frozen encoder of an all-36 model, trained with each label set
-(mean of 2 seeds). Every label set in which the time indices vary independently somewhere matches all 36, random cells included
+(mean of 3 seeds). Every label set in which the time indices vary independently somewhere matches all 36, random cells included
 (0.31 against 0.31). The two that keep a pair tied fail in different ways: tracks only blurs time
-into the camera (error grows away from the diagonal, 0.61); posed depth only never sees time change, so it moves static
+into the camera (error grows away from the diagonal, 0.64); posed depth only never sees time change, so it moves static
 points with it (error grows down the rows, 0.65). Both differ from all 36 across seeds (Welch
-p = 0.02 and p = 0.01).</div>
+p&nbsp;=&nbsp;0.04 and p&nbsp;=&nbsp;1.5&nbsp;&times;&nbsp;10<sup>&minus;4</sup>).</div>
 
 <h2><span class="n">04</span>What it suggests for D4RT</h2>
 <ul>

@@ -31,7 +31,7 @@ import optax
 import scenes as S
 
 T = S.T
-DESIGNS = ("full", "rowcol", "random", "tied", "tiedrow", "row")
+DESIGNS = ("full", "rowcol", "random", "tied", "tiedrow", "split", "row")
 
 
 def allowed_cells(design, rng):
@@ -44,6 +44,8 @@ def allowed_cells(design, rng):
     if design == "tied":         # camera-frame tracks: the point at time t in camera t
         return g == c
     if design == "tiedrow":      # camera-frame tracks plus posed depth at the source time
+        return (g == c) | (g == s)
+    if design == "split":        # the same cells as tiedrow, but each clip has only one kind of label (see sample_queries)
         return (g == c) | (g == s)
     if design == "row":          # posed depth only: the point at its own time, in every camera
         return g == s
@@ -162,6 +164,9 @@ def sample_queries(data, rgb_pad, clips, A, Q, rng, design, tables=None):
     if design == "full":                            # D4RT's rule: uniform, with t_tgt = t_cam forced w.p. 0.4
         tt = rng.integers(0, T, size=(B, Q))
         tc = np.where(rng.random((B, Q)) < 0.4, tt, rng.integers(0, T, size=(B, Q)))
+    elif design == "split":                         # even-numbered clips: camera-frame tracks only (t_tgt = t_cam);
+        tc = rng.integers(0, T, size=(B, Q))        # odd-numbered clips: posed depth only (t_tgt = t_src)
+        tt = np.where((np.asarray(clips) % 2 == 0)[:, None], tc, ts)
     else:
         flat = A.reshape(T, T * T)
         counts = flat.sum(1)

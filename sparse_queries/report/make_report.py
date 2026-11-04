@@ -21,12 +21,14 @@ def f2(x):
 
 
 def fp(p):
+    """p-value for running text; non-breaking spaces keep it on one line."""
     if p < 1e-15:
-        return "p &lt; 10<sup>&minus;15</sup>"
+        return "p&nbsp;&lt;&nbsp;10<sup>&minus;15</sup>"
     if p < 1e-3:
-        m, e = f"{p:.0e}".split("e")
-        return f"p = {m} &times; 10<sup>{int(e)}</sup>"
-    return f"p = {p:.2f}"
+        m, e = f"{p:.1e}".split("e")
+        return f"p&nbsp;=&nbsp;{m}&nbsp;&times;&nbsp;10<sup>&minus;{abs(int(e))}</sup>"
+    return f"p&nbsp;=&nbsp;{p:.3f}" if p < 0.01 else f"p&nbsp;=&nbsp;{p:.2f}"
+
 
 
 def m(d, w="static", src=SE):
@@ -37,9 +39,8 @@ base_m, base_s = E["full"]["base_mov"][0], E["full"]["base_sta"][0]
 ns_e = SE["full"]["static"]["seeds"]
 ns_d = SD["full"]["static"]["seeds"]
 tied = SE["tied"]["static"]
-close = max(abs(x) for d in ("rowcol", "tiedrow") for x in SE[d]["static"]["diff_ci"])
-ROW_DRIFT = (f"; a static point moves by {DRD['row']['mean']:.2f} units across target times, against {DRD['full']['mean']:.2f} for the all-{N2} decoder"
-             if "row" in DRD and "full" in DRD else "")
+ROW_DRIFT = (f"; it moves a static point by {DRD['row']['mean']:.2f} units across target times, against {DRD['full']['mean']:.2f} for the all-{N2} decoder"
+             if all(len(DRD.get(d, {}).get("per_seed", {})) == ns_d for d in ("row", "full")) else "")
 every = (f"on every one of the {tied['scenes']} test scenes" if tied["scenes_worse"] == tied["scenes"]
          else f"on {tied['scenes_worse']} of {tied['scenes']} test scenes")
 
@@ -53,7 +54,7 @@ TILES = f"""
 against <b>{f2(m('full'))}</b> when all {N2} are supervised.</div></div>
 <div class="tile bad"><div class="num">{tied['ratio']:.1f}&times; <small>the error</small></div>
 <div class="lab">when only t<sub>tgt</sub> = t<sub>cam</sub> is supervised, as with camera-frame tracks: worse on
-<b>{tied['scenes_worse']} of {tied['scenes']}</b> test scenes ({fp(tied['wilcoxon_p_holm'])}).</div></div>
+<b>{tied['scenes_worse']} of {tied['scenes']}</b> test scenes{" and in every seed" if tied['every_seed_worse'] else ""}.</div></div>
 <div class="tile fix"><div class="num">+1 <small>row</small></div>
 <div class="lab">of posed depth (t<sub>tgt</sub> = t<sub>src</sub>) added to those tracks brings the error back to <b>{f2(m('tiedrow'))}</b>.</div></div>
 """
@@ -67,7 +68,7 @@ narrower. Camera-frame 3D tracks (2D tracks plus per-frame depth) only give quer
 only gives <b>t<sub>tgt</sub> = t<sub>src</sub></b>. Does the model answer combinations it was never trained on? The color-shape test suggests
 it does, as long as time and camera vary independently somewhere in the labels.</p>
 
-<img src="../../results/sparse_queries/end_to_end_error_maps_static.png" alt="Error maps on static points for four label sets">
+<img src="../../results/sparse_queries/end_to_end_error_maps_static.png" alt="Error maps on static points for each label set">
 <div class="cap"><b>Figure 1.</b> Error on static points by target time (rows) and camera (columns), for points first seen in frame 0 of 100 new
 scenes; mean of {ns_e} models per panel, each trained from scratch with the same number of training queries. Outlined cells were supervised; the
 rest were never seen in training. A static point's position depends only on the camera, so a model that keeps time and camera apart shows
@@ -88,35 +89,42 @@ which none of the sparse label sets contains.</p>
 
 def row(d, label):
     s, mo = SE[d]["static"], SE[d]["moving"]
-    diff = "reference" if d == "full" else f"{s['diff']:+.2f} [{s['diff_ci'][0]:+.2f}, {s['diff_ci'][1]:+.2f}]"
-    return (f"<tr><td>{label}</td><td class='num'>{E[d]['cells']}</td><td class='num'><b>{s['mean']:.2f}</b> &plusmn; {s['sd']:.2f}</td>"
-            f"<td class='num'>{diff}</td><td class='num'>{mo['mean']:.2f} &plusmn; {mo['sd']:.2f}</td></tr>")
+    rt = lambda c: "reference" if d == "full" else f"{c['ratio']:.2f}&times; [{c['ratio_ci_2level'][0]:.2f}, {c['ratio_ci_2level'][1]:.2f}]"
+    cells = f"{T} per clip" if d == "split" else E[d]["cells"]
+    return (f"<tr><td>{label}</td><td class='num'>{cells}</td><td class='num'><b>{s['mean']:.3f}</b> &plusmn; {s['sd']:.3f}</td>"
+            f"<td class='num'>{rt(s)}</td><td class='num'>{mo['mean']:.3f} &plusmn; {mo['sd']:.3f}</td><td class='num'>{rt(mo)}</td></tr>")
 
 
 LABEL = {"full": f"All {N2} (D4RT's sampling)", "rowcol": "One row + one column",
-         "tiedrow": "Camera-frame tracks + posed depth", "tied": "Camera-frame tracks only"}
-TABLE = "".join(row(d, LABEL[d]) for d in ["full", "rowcol", "tiedrow", "tied"])
+         "tiedrow": "Camera-frame tracks + posed depth", "split": "Tracks + posed depth, on different clips",
+         "tied": "Camera-frame tracks only"}
+E2E = [d for d in ["full", "rowcol", "tiedrow", "split", "tied"] if d in SE]
+INDEP = [d for d in E2E if d != "tied"]
+TABLE = "".join(row(d, LABEL[d]) for d in E2E)
 rc_m, tr_m, ti_m = SE["rowcol"]["moving"], SE["tiedrow"]["moving"], SE["tied"]["moving"]
 
 BODY2 = f"""
 <h2 style="margin-top:0"><span class="n">03</span>What I got</h2>
 <table>
-<tr><th>Supervised combinations</th><th class="num">Cells</th><th class="num">Static points</th><th class="num">Difference to all {N2} [95% CI]</th><th class="num">Moving points</th></tr>
+<tr><th>Supervised combinations</th><th class="num">Cells</th><th class="num">Static points</th><th class="num">Ratio to all {N2} [95% CI]</th><th class="num">Moving points</th><th class="num">Ratio to all {N2} [95% CI]</th></tr>
 {TABLE}
-<tr class="base"><td>Assume nothing moves (baseline)</td><td class="num">&ndash;</td><td class="num">{f2(base_s)}</td><td></td><td class="num">{f2(base_m)}</td></tr>
+<tr class="base"><td>Assume nothing moves (baseline)</td><td class="num">&ndash;</td><td class="num">{base_s:.3f}</td><td></td><td class="num">{base_m:.3f}</td><td></td></tr>
 </table>
-<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over {ns_e} seeds. Differences are per test scene, averaged over seeds, with 95% bootstrap intervals over the
-100 scenes; p-values are two-sided Wilcoxon signed-rank tests, Holm-corrected across the comparisons.</div>
+<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over {ns_e} seeds. Ratios are errors relative to the all-{N2} model, with 95% intervals from a bootstrap that
+resamples both the training seeds and the 100 test scenes. p-values in the text are Welch&rsquo;s t-tests across seeds, Holm-corrected across the
+comparisons; scene-level tests are in the repository.</div>
 <ul>
-<li><b>Varying independently is enough.</b> One row and one column, and camera-frame tracks plus posed depth ({K} cells each), stay within
-{close:.2f} of the all-{N2} model on static points (95% intervals above). On moving points they cost {100 * (rc_m['ratio'] - 1):.0f}% and
-{100 * (tr_m['ratio'] - 1):.0f}% ({fp(rc_m['wilcoxon_p_holm'])} and {fp(tr_m['wilcoxon_p_holm'])}).</li>
+<li><b>Varying independently is enough.</b> One row and one column, and camera-frame tracks plus posed depth ({K} cells each), are no worse
+than all {N2} on static points: error ratios {SE['rowcol']['static']['ratio']:.2f} and {SE['tiedrow']['static']['ratio']:.2f}, with 95% intervals that end at
+{SE['rowcol']['static']['ratio_ci_2level'][1]:.2f} and {SE['tiedrow']['static']['ratio_ci_2level'][1]:.2f}. On moving points they cost a small
+{100 * (rc_m['ratio'] - 1):.0f}% and {100 * (tr_m['ratio'] - 1):.0f}%, consistent across seeds ({fp(rc_m['welch_p_seeds_holm'])} and {fp(tr_m['welch_p_seeds_holm'])}).</li>
 <li><b>Tied labels confound time and camera.</b> With only t<sub>tgt</sub> = t<sub>cam</sub>, the static-point error is {tied['ratio']:.1f} times
-higher (95% CI {tied['ratio_ci'][0]:.1f} to {tied['ratio_ci'][1]:.1f}), {every}, and it grows with the gap between
+higher (95% CI {tied['ratio_ci_2level'][0]:.1f} to {tied['ratio_ci_2level'][1]:.1f}), {every}{" and in every seed" if tied['every_seed_worse'] else ""}
+({fp(tied['welch_p_seeds_holm'])}), and it grows with the gap between
 t<sub>tgt</sub> and t<sub>cam</sub> (Figure 1): nothing in the labels says which index sets the camera. The model reads time as camera motion:
 asked about a static point from one camera at different times, it moves the point by {DR['tied']['mean']:.2f} units on average, where the other
-models keep it still ({min(DR[d]['mean'] for d in ('full', 'rowcol', 'tiedrow')):.2f} to {max(DR[d]['mean'] for d in ('full', 'rowcol', 'tiedrow')):.2f}).
-Moving points: {100 * (ti_m['ratio'] - 1):.0f}% worse ({fp(ti_m['wilcoxon_p_holm'])}).</li>
+models keep it still ({min(DR[d]['mean'] for d in INDEP):.2f} to {max(DR[d]['mean'] for d in INDEP):.2f}).
+Moving points: {100 * (ti_m['ratio'] - 1):.0f}% worse ({fp(ti_m['welch_p_seeds_holm'])}).</li>
 <li><b>One row of posed depth resolves it</b>, with the same number of training queries.</li>
 </ul>
 

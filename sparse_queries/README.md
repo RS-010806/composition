@@ -74,6 +74,7 @@ All statistics: [stats.md](../results/sparse_queries/stats.md).
 | One row + one column | 11 | t_tgt = t_src, or t_cam = t_src | posed depth plus tracks in the source camera |
 | Random | 11 | 11 cells drawn at random for each t_src | |
 | Camera-frame tracks + posed depth | 11 | t_tgt = t_cam, or t_tgt = t_src | 2D tracks and per-frame depth, plus posed depth |
+| Tracks + posed depth, different clips | 6 per clip, 11 overall | t_tgt = t_cam on half of the clips, t_tgt = t_src on the other half | tracks from videos without poses, posed depth from other videos |
 | Camera-frame tracks only | 6 | t_tgt = t_cam | 2D tracks and per-frame depth, no camera poses |
 | Posed depth only | 6 | t_tgt = t_src | depth maps with camera poses |
 
@@ -88,7 +89,8 @@ All statistics: [stats.md](../results/sparse_queries/stats.md).
 | `scenes.py` | Procedural clips and exact ground truth for any query |
 | `d4rt_small.py` | The model, the supervision designs, end-to-end training and evaluation |
 | `decoder_only.py` | Fresh decoders on a frozen encoder, one per label set and seed (post-training version) |
-| `stats.py` | Seed spread, per-scene paired differences with bootstrap intervals, Wilcoxon and Welch tests |
+| `stats.py` | Seed spread, two-level (seed and scene) bootstrap intervals, Welch and Wilcoxon tests, Holm correction |
+| `drift.py` | How far a model moves a static point when only the target time changes |
 | `readings.py` | Where the tracks-only model's answers land between the readings its labels cannot tell apart |
 | `reeval.py` | Re-scores saved models (adds per-scene errors) |
 | `analyze.py` | Tables and figures in `../results/sparse_queries/` |
@@ -99,11 +101,13 @@ All statistics: [stats.md](../results/sparse_queries/stats.md).
 
 ```bash
 pip install -r ../requirements.txt
-for s in 0 1 2; do for d in full rowcol tied tiedrow; do
+for s in 0 1 2; do for d in full rowcol tied tiedrow split; do
   python d4rt_small.py --design $d --seed $s --steps 5000 --out runs
 done; done
 python decoder_only.py --encoder runs/full_s0 --designs full rowcol random tiedrow tied row --seeds 0 1 2 --steps 2500 --out runs_dec
 python readings.py --run runs/tied_s0 --out ../results/sparse_queries/readings_tied.json
+python drift.py --runs runs --out ../results/sparse_queries/drift.json
+python drift.py --runs runs --decoders runs_dec --out ../results/sparse_queries/drift_decoder_only.json
 python analyze.py --runs runs --name end_to_end
 python analyze.py --runs runs_dec --name decoder_only
 python stats.py
