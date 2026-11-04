@@ -46,7 +46,8 @@ every = (f"on every one of the {tied['scenes']} test scenes" if tied["scenes_wor
 
 DEK = (f"Trained on one row and one column of the {T} &times; {T} time-camera grid ({K} of {N2} combinations), a small D4RT-style "
        f"model answered the combinations it never saw as well as one trained on all {N2}. Trained only where time and camera "
-       f"coincide, which is all that camera-frame tracks provide, it confused the two; one row of posed depth fixed that.")
+       f"coincide, which is all that camera-frame tracks provide, it confused the two; one row of posed depth fixed that, even "
+       f"when it came from other clips.")
 
 TILES = f"""
 <div class="tile"><div class="num">{K} <small>of {N2}</small></div>
@@ -56,7 +57,8 @@ against <b>{f2(m('full'))}</b> when all {N2} are supervised.</div></div>
 <div class="lab">when only t<sub>tgt</sub> = t<sub>cam</sub> is supervised, as with camera-frame tracks: worse on
 <b>{tied['scenes_worse']} of {tied['scenes']}</b> test scenes{" and in every seed" if tied['every_seed_worse'] else ""}.</div></div>
 <div class="tile fix"><div class="num">+1 <small>row</small></div>
-<div class="lab">of posed depth (t<sub>tgt</sub> = t<sub>src</sub>) added to those tracks brings the error back to <b>{f2(m('tiedrow'))}</b>.</div></div>
+<div class="lab">of posed depth (t<sub>tgt</sub> = t<sub>src</sub>) added to those tracks brings the error back to <b>{f2(m('tiedrow'))}</b>,
+and to <b>{f2(m('split'))}</b> when it comes from other clips.</div></div>
 """
 
 BODY1 = f"""
@@ -100,6 +102,12 @@ LABEL = {"full": f"All {N2} (D4RT's sampling)", "rowcol": "One row + one column"
          "tied": "Camera-frame tracks only"}
 E2E = [d for d in ["full", "rowcol", "tiedrow", "split", "tied"] if d in SE]
 INDEP = [d for d in E2E if d != "tied"]
+sp = SE["split"]["static"]
+lo, hi = sp["ratio_ci_2level"]
+SPLIT_VS_FULL = ("no worse than with all " + str(N2)) if hi < 1.10 and lo <= 1.0 else ("close to all " + str(N2))
+sv = S["split_vs_tiedrow"]["static"]
+SPLIT_VS_SAME = (f"slightly better ({f2(m('tiedrow'))}; {fp(sv['welch_p_seeds_holm'])})" if sv["welch_p_seeds_holm"] < 0.05
+                 else f"not clearly better ({f2(m('tiedrow'))}; {fp(sv['welch_p_seeds_holm'])})")
 TABLE = "".join(row(d, LABEL[d]) for d in E2E)
 rc_m, tr_m, ti_m = SE["rowcol"]["moving"], SE["tiedrow"]["moving"], SE["tied"]["moving"]
 
@@ -125,7 +133,9 @@ t<sub>tgt</sub> and t<sub>cam</sub> (Figure 1): nothing in the labels says which
 asked about a static point from one camera at different times, it moves the point by {DR['tied']['mean']:.2f} units on average, where the other
 models keep it still ({min(DR[d]['mean'] for d in INDEP):.2f} to {max(DR[d]['mean'] for d in INDEP):.2f}).
 Moving points: {100 * (ti_m['ratio'] - 1):.0f}% worse ({fp(ti_m['welch_p_seeds_holm'])}).</li>
-<li><b>One row of posed depth resolves it</b>, with the same number of training queries.</li>
+<li><b>One row of posed depth resolves it, even from other clips.</b> With tracks on half of the clips and posed depth on the other half,
+so that no clip has both, the static-point error is {f2(sp['mean'])}, {SPLIT_VS_FULL} (ratio {sp['ratio']:.2f}, 95% CI {sp['ratio_ci_2level'][0]:.2f} to
+{sp['ratio_ci_2level'][1]:.2f}); having both on the same clips is {SPLIT_VS_SAME}.</li>
 </ul>
 
 <img class="fig2" src="../../results/sparse_queries/decoder_only_error_maps_static.png" alt="Static-point error maps for six label sets, decoder-only training">
@@ -139,9 +149,10 @@ points with it (error grows down the rows, {f2(m('row', 'static', SD))}{ROW_DRIF
 <h2><span class="n">04</span>What it suggests for D4RT</h2>
 <ul>
 <li><b>Camera-frame tracks alone may not teach a change of reference frame.</b> Queries with t<sub>tgt</sub> &ne; t<sub>cam</sub>, as in
-world-coordinate tracking, need labels in which time and camera vary independently.</li>
-<li><b>World-coordinate tracks may not be needed for it.</b> Camera-frame tracks plus posed depth, both easier to obtain, covered the rest.
-This matters most when training on real videos without camera poses.</li>
+world-coordinate tracking, need labels in which time and camera vary independently. This matters most for real videos without camera
+poses, where camera-frame tracks may be the only 3D labels.</li>
+<li><b>World-coordinate tracks may not be needed for it.</b> Camera-frame tracks plus posed depth, each easier to obtain, covered the rest,
+even from different clips: tracks from videos without camera poses could be paired with posed depth from other footage.</li>
 <li><b>A cheap check at full scale:</b> hold out queries with t<sub>src</sub>, t<sub>tgt</sub> and t<sub>cam</sub> all different during training and score them.</li>
 </ul>
 
@@ -149,8 +160,9 @@ This matters most when training on real videos without camera poses.</li>
 <p class="note">A small model on synthetic 32 &times; 32 clips; the camera keeps a fixed height and tilt so that metric depth is recoverable from one
 frame. At this scale the model learns camera motion well but tracks moving objects only partly: even with all {N2} combinations its error on moving
 points grows with the time gap ({f2(m('full', 'moving'))} against {f2(base_m)} for assuming nothing moves). Static points, whose answer depends only on
-the camera, therefore give the cleanest comparison; moving points show the same ordering. Next: Kubric clips at higher resolution, and a mixture in
-which some clips are fully labeled and others have only camera-frame tracks, which is closer to how D4RT's training data is assembled.</p>
+the camera, therefore give the cleanest comparison; moving points show the same ordering. Three seeds per label set: the intervals resample seeds
+as well as scenes, but the seed-to-seed spread is itself only roughly known. Next: Kubric clips at higher resolution, and how small the share of
+posed-depth clips can be.</p>
 
 <div class="refs">
 <p>C. Zhang et al. Efficiently reconstructing dynamic scenes one D4RT at a time. CVPR, 2026.</p>
