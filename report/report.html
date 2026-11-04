@@ -30,7 +30,7 @@
   .k { color: var(--green); font-weight: 700; }
   .bad { color: var(--red); font-weight: 700; }
   .designs { width: 64%; margin: 0.4mm auto 0 auto; }
-  .heat { width: 70%; margin: 0 auto; }
+  .heat { width: 68%; margin: 0 auto; }
   table { border-collapse: collapse; width: 100%; font-size: 7.9pt; margin: 0.5mm 0 2.4mm 0; line-height: 1.35; }
   th, td { text-align: left; padding: 1.1mm 2mm 1.1mm 0; border-bottom: 1px solid #eaeef2; vertical-align: top; }
   th { color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); }
@@ -97,8 +97,8 @@
   <h2>3&nbsp;&nbsp;How the two connect, and what is next</h2>
   <p>Both parts point the same way: models combine parts they know, and fail when a part is missing (an unseen color, the festival rule) or ambiguous (confounded examples). With every color and shape known, 11 examples covered 36 combinations; with the festival rule supplied, Gemma 4 combined it with the dinner request every time. Next:</p>
   <ol>
+    <li>Factorized queries in 4D perception, such as D4RT&rsquo;s point, time and camera, with time-camera combinations held out.</li>
     <li>Real attribute-object pairs, which natural images confound (bananas are almost always yellow), for example MIT-States.</li>
-    <li>Compounds whose parts change each other&rsquo;s meaning (&ldquo;red wine&rdquo;, &ldquo;fake gun&rdquo;), where an additive prior should fail.</li>
     <li>When a model&rsquo;s in-context labels can be trusted to fill gaps in post-training data, and how to detect when they cannot.</li>
   </ol>
 
@@ -108,6 +108,7 @@
   <h3>References</h3>
   <div class="refs">
     <p>A. K. Lampinen et al. On the generalization of language models from in-context learning and finetuning: a controlled study. arXiv:2505.00661, 2025.</p>
+    <p>C. Zhang et al. Efficiently reconstructing dynamic scenes one D4RT at a time. CVPR, 2026.</p>
     <p>P. Isola, J. J. Lim, E. H. Adelson. Discovering states and transformations in image collections (MIT-States). CVPR, 2015.</p>
     <p>On Paryushan practice: JainGPT, &ldquo;What Jains Eat During Paryushan&rdquo;; Wikipedia, &ldquo;Jain vegetarianism&rdquo; (the narrower, leafy-greens reading).</p>
   </div>

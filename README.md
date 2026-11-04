@@ -70,7 +70,7 @@ All per-run numbers are in [results/composition_summary.md](results/composition_
 
 ### Where this could go
 
-The pilot is a perception version of the augmentation in [Lampinen et al. (2025)](https://arxiv.org/abs/2505.00661), who found that in-context learning generalizes more flexibly than fine-tuning and improved fine-tuning by adding in-context inferences to its data. Here the in-context inferences are labels for the combinations a post-training set leaves confounded. The next tests are real attribute-object pairs, which natural data confounds (object and material in images, as in MIT-States; verb and object in video), and compounds whose parts change each other's meaning ("red wine", "fake gun"), where a prior that composes additively should fail. The open question is when the model's in-context prior can be trusted to fill gaps in post-training data, and how to detect when it cannot.
+The row + column result bears on factorized queries in perception models. In [D4RT (Zhang et al., 2026)](https://arxiv.org/abs/2512.08924), a query combines a point, a time and a camera; the matching test is whether sparse supervision covers held-out time-camera combinations when the two vary independently, and fails when they are tied. The pilot is a perception version of the augmentation in [Lampinen et al. (2025)](https://arxiv.org/abs/2505.00661), who found that in-context learning generalizes more flexibly than fine-tuning and improved fine-tuning by adding in-context inferences to its data. Here the in-context inferences are labels for the combinations a post-training set leaves confounded. The next tests are real attribute-object pairs, which natural data confounds (object and material in images, as in MIT-States; verb and object in video), and compounds whose parts change each other's meaning ("red wine", "fake gun"), where a prior that composes additively should fail. The open question is when the model's in-context prior can be trusted to fill gaps in post-training data, and how to detect when it cannot.
 
 ### Caveats
 
@@ -118,4 +118,5 @@ report/        two-page summary (PDF)
 ## References
 
 - A. K. Lampinen, A. Chaudhry, S. C. Y. Chan, C. Wild, D. Wan, A. Ku, J. Bornschein, R. Pascanu, M. Shanahan, J. L. McClelland. *On the generalization of language models from in-context learning and finetuning: a controlled study.* arXiv:2505.00661, 2025.
+- C. Zhang, G. Le Moing, S. Koppula, I. Rocco, L. Momeni, J. Xie, S. Sun, R. Sukthankar, J. K. Barral, R. Hadsell, Z. Ghahramani, A. Zisserman, J. Zhang, M. S. M. Sajjadi. *Efficiently reconstructing dynamic scenes one D4RT at a time.* CVPR, 2026.
 - P. Isola, J. J. Lim, E. H. Adelson. *Discovering states and transformations in image collections* (MIT-States). CVPR, 2015.
