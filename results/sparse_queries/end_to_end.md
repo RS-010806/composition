@@ -7,6 +7,7 @@ Mean 3D end-point error (scene units; spheres have radius 0.55 to 0.8) on held-o
 | All 36 | 36 | 3 | 0.710 ± 0.007 | 0.242 ± 0.003 | 9% | 67% | - | 0.637 / 0.220 |
 | Row + column | 11 | 3 | 0.745 ± 0.008 | 0.230 ± 0.018 | 7% | 70% | 0.665 ± 0.007 | 0.491 / 0.156 |
 | Tracks + depth | 11 | 3 | 0.734 ± 0.007 | 0.222 ± 0.009 | 7% | 71% | 0.652 ± 0.004 | 0.469 / 0.205 |
+| Tracks + depth, different clips | 11 | 3 | 0.735 ± 0.005 | 0.247 ± 0.008 | 7% | 66% | 0.656 ± 0.003 | 0.470 / 0.230 |
 | Tracks only | 6 | 3 | 0.851 ± 0.014 | 0.617 ± 0.021 | 5% | 15% | 0.876 ± 0.030 | 0.553 / 0.254 |
 
 Baseline that assumes nothing moves (the point where it was, in its own camera): moving 1.180, static 1.003.

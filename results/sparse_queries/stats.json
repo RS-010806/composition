@@ -56,8 +56,8 @@
     ],
     "every_seed_worse": false,
     "every_seed_better": false,
-    "wilcoxon_p_holm": 0.004862747585576055,
-    "welch_p_seeds_holm": 0.3621652469716943
+    "wilcoxon_p_holm": 0.00972549517115211,
+    "welch_p_seeds_holm": 0.7243304939433886
    },
    "moving": {
     "seeds": 3,
@@ -92,8 +92,8 @@
     ],
     "every_seed_worse": true,
     "every_seed_better": false,
-    "wilcoxon_p_holm": 4.377825991528978e-05,
-    "welch_p_seeds_holm": 0.018083632881600666
+    "wilcoxon_p_holm": 6.566738987293467e-05,
+    "welch_p_seeds_holm": 0.027125449322400998
    }
   },
   "tiedrow": {
@@ -130,8 +130,8 @@
     ],
     "every_seed_worse": false,
     "every_seed_better": true,
-    "wilcoxon_p_holm": 4.639175547386006e-05,
-    "welch_p_seeds_holm": 0.11802801375832239
+    "wilcoxon_p_holm": 7.731959245643344e-05,
+    "welch_p_seeds_holm": 0.1770420206374836
    },
    "moving": {
     "seeds": 3,
@@ -166,8 +166,82 @@
     ],
     "every_seed_worse": true,
     "every_seed_better": false,
-    "wilcoxon_p_holm": 0.0010043830372213401,
-    "welch_p_seeds_holm": 0.039031261634288064
+    "wilcoxon_p_holm": 0.0015065745558320103,
+    "welch_p_seeds_holm": 0.05204168217905075
+   }
+  },
+  "split": {
+   "static": {
+    "seeds": 3,
+    "mean": 0.2466417004664739,
+    "sd": 0.00789686372973926,
+    "seed_values": [
+     0.2428,
+     0.2414,
+     0.2557
+    ],
+    "welch_p_seeds": 0.3959031288513417,
+    "scenes": 100,
+    "diff": 0.005162042652567228,
+    "diff_ci": [
+     -0.002206042569751541,
+     0.012450411743173989
+    ],
+    "ratio": 1.0213806959567808,
+    "ratio_ci": [
+     0.9910478951971017,
+     1.0520277023023543
+    ],
+    "wilcoxon_p": 0.11217194781344622,
+    "scenes_worse": 60,
+    "diff_ci_2level": [
+     -0.007134095618501308,
+     0.017929456024120216
+    ],
+    "ratio_ci_2level": [
+     0.9711729493586376,
+     1.0756674014966312
+    ],
+    "every_seed_worse": false,
+    "every_seed_better": false,
+    "wilcoxon_p_holm": 0.11217194781344622,
+    "welch_p_seeds_holm": 0.7243304939433886
+   },
+   "moving": {
+    "seeds": 3,
+    "mean": 0.7348405917485555,
+    "sd": 0.004835673652621867,
+    "seed_values": [
+     0.7326,
+     0.7404,
+     0.7315
+    ],
+    "welch_p_seeds": 0.008210578603828376,
+    "scenes": 100,
+    "diff": 0.024158509373664858,
+    "diff_ci": [
+     0.013307899442811803,
+     0.03521290216594935
+    ],
+    "ratio": 1.034017969410091,
+    "ratio_ci": [
+     1.0182352392600806,
+     1.050626793476976
+    ],
+    "wilcoxon_p": 0.00019901189269845365,
+    "scenes_worse": 65,
+    "diff_ci_2level": [
+     0.010451641793052371,
+     0.03902496572832268
+    ],
+    "ratio_ci_2level": [
+     1.014491993337311,
+     1.0559318677296778
+    ],
+    "every_seed_worse": true,
+    "every_seed_better": false,
+    "wilcoxon_p_holm": 0.0007960475707938146,
+    "welch_p_seeds_holm": 0.041052893019141876
    }
   },
   "tied": {
@@ -204,8 +278,8 @@
     ],
     "every_seed_worse": true,
     "every_seed_better": false,
-    "wilcoxon_p_holm": 2.3379359070575454e-17,
-    "welch_p_seeds_holm": 0.004703790119644094
+    "wilcoxon_p_holm": 3.1172478760767274e-17,
+    "welch_p_seeds_holm": 0.006271720159525459
    },
    "moving": {
     "seeds": 3,
@@ -240,8 +314,8 @@
     ],
     "every_seed_worse": true,
     "every_seed_better": false,
-    "wilcoxon_p_holm": 1.3031364324676426e-12,
-    "welch_p_seeds_holm": 0.004703790119644094
+    "wilcoxon_p_holm": 1.8243910054546994e-12,
+    "welch_p_seeds_holm": 0.006271720159525459
    }
   }
  },
@@ -397,6 +471,80 @@
     "welch_p_seeds": 6.621549005063302e-05,
     "welch_p_seeds_holm": 0.0005959394104556972
    }
+  }
+ },
+ "split_vs_tiedrow": {
+  "static": {
+   "seeds": 3,
+   "mean": 0.2466417004664739,
+   "sd": 0.00789686372973926,
+   "seed_values": [
+    0.2428,
+    0.2414,
+    0.2557
+   ],
+   "welch_p_seeds": 0.026318494824269983,
+   "scenes": 100,
+   "diff": 0.024361394817630447,
+   "diff_ci": [
+    0.01677518135185043,
+    0.032023847858111056
+   ],
+   "ratio": 1.109619784921231,
+   "ratio_ci": [
+    1.0752325271965892,
+    1.1465594236430483
+   ],
+   "wilcoxon_p": 5.2429431836998076e-08,
+   "scenes_worse": 75,
+   "diff_ci_2level": [
+    0.009326747896770626,
+    0.039327235660826146
+   ],
+   "ratio_ci_2level": [
+    1.040076875462255,
+    1.1833854131741848
+   ],
+   "every_seed_worse": true,
+   "every_seed_better": false,
+   "wilcoxon_p_holm": 1.0485886367399615e-07,
+   "welch_p_seeds_holm": 0.05263698964853997
+  },
+  "moving": {
+   "seeds": 3,
+   "mean": 0.7348405917485555,
+   "sd": 0.004835673652621867,
+   "seed_values": [
+    0.7326,
+    0.7404,
+    0.7315
+   ],
+   "welch_p_seeds": 0.8660480107993003,
+   "scenes": 100,
+   "diff": 0.0010941094160079956,
+   "diff_ci": [
+    -0.00385602869590124,
+    0.006149207467834156
+   ],
+   "ratio": 1.0014921706047497,
+   "ratio_ci": [
+    0.9948670756379041,
+    1.0086047836043006
+   ],
+   "wilcoxon_p": 0.8419319948258008,
+   "scenes_worse": 53,
+   "diff_ci_2level": [
+    -0.008958275320629192,
+    0.01119857725501057
+   ],
+   "ratio_ci_2level": [
+    0.9878729494053816,
+    1.0154200644591038
+   ],
+   "every_seed_worse": false,
+   "every_seed_better": false,
+   "wilcoxon_p_holm": 0.8419319948258008,
+   "welch_p_seeds_holm": 0.8660480107993003
   }
  }
 }

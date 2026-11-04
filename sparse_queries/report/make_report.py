@@ -103,11 +103,8 @@ LABEL = {"full": f"All {N2} (D4RT's sampling)", "rowcol": "One row + one column"
 E2E = [d for d in ["full", "rowcol", "tiedrow", "split", "tied"] if d in SE]
 INDEP = [d for d in E2E if d != "tied"]
 sp = SE["split"]["static"]
-lo, hi = sp["ratio_ci_2level"]
-SPLIT_VS_FULL = ("no worse than with all " + str(N2)) if hi < 1.10 and lo <= 1.0 else ("close to all " + str(N2))
 sv = S["split_vs_tiedrow"]["static"]
-SPLIT_VS_SAME = (f"slightly better ({f2(m('tiedrow'))}; {fp(sv['welch_p_seeds_holm'])})" if sv["welch_p_seeds_holm"] < 0.05
-                 else f"not clearly better ({f2(m('tiedrow'))}; {fp(sv['welch_p_seeds_holm'])})")
+pct = lambda c: f"{100 * (c['ratio_ci_2level'][0] - 1):.0f} to {100 * (c['ratio_ci_2level'][1] - 1):.0f}%"
 TABLE = "".join(row(d, LABEL[d]) for d in E2E)
 rc_m, tr_m, ti_m = SE["rowcol"]["moving"], SE["tiedrow"]["moving"], SE["tied"]["moving"]
 
@@ -118,14 +115,13 @@ BODY2 = f"""
 {TABLE}
 <tr class="base"><td>Assume nothing moves (baseline)</td><td class="num">&ndash;</td><td class="num">{base_s:.3f}</td><td></td><td class="num">{base_m:.3f}</td><td></td></tr>
 </table>
-<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over {ns_e} seeds. Ratios are errors relative to the all-{N2} model, with 95% intervals from a bootstrap that
-resamples both the training seeds and the 100 test scenes. p-values in the text are Welch&rsquo;s t-tests across seeds, Holm-corrected across the
-comparisons; scene-level tests are in the repository.</div>
+<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over {ns_e} seeds. Ratios to the all-{N2} model, with 95% intervals from a bootstrap over both the training
+seeds and the 100 test scenes. p-values in the text: Welch&rsquo;s t-tests across seeds, Holm-corrected; scene-level tests are in the repository.</div>
 <ul>
 <li><b>Varying independently is enough.</b> One row and one column, and camera-frame tracks plus posed depth ({K} cells each), are no worse
 than all {N2} on static points: error ratios {SE['rowcol']['static']['ratio']:.2f} and {SE['tiedrow']['static']['ratio']:.2f}, with 95% intervals that end at
 {SE['rowcol']['static']['ratio_ci_2level'][1]:.2f} and {SE['tiedrow']['static']['ratio_ci_2level'][1]:.2f}. On moving points they cost a small
-{100 * (rc_m['ratio'] - 1):.0f}% and {100 * (tr_m['ratio'] - 1):.0f}%, consistent across seeds ({fp(rc_m['welch_p_seeds_holm'])} and {fp(tr_m['welch_p_seeds_holm'])}).</li>
+{100 * (rc_m['ratio'] - 1):.0f}% and {100 * (tr_m['ratio'] - 1):.0f}% (95% intervals {pct(rc_m)} and {pct(tr_m)}).</li>
 <li><b>Tied labels confound time and camera.</b> With only t<sub>tgt</sub> = t<sub>cam</sub>, the static-point error is {tied['ratio']:.1f} times
 higher (95% CI {tied['ratio_ci_2level'][0]:.1f} to {tied['ratio_ci_2level'][1]:.1f}), {every}{" and in every seed" if tied['every_seed_worse'] else ""}
 ({fp(tied['welch_p_seeds_holm'])}), and it grows with the gap between
@@ -134,8 +130,9 @@ asked about a static point from one camera at different times, it moves the poin
 models keep it still ({min(DR[d]['mean'] for d in INDEP):.2f} to {max(DR[d]['mean'] for d in INDEP):.2f}).
 Moving points: {100 * (ti_m['ratio'] - 1):.0f}% worse ({fp(ti_m['welch_p_seeds_holm'])}).</li>
 <li><b>One row of posed depth resolves it, even from other clips.</b> With tracks on half of the clips and posed depth on the other half,
-so that no clip has both, the static-point error is {f2(sp['mean'])}, {SPLIT_VS_FULL} (ratio {sp['ratio']:.2f}, 95% CI {sp['ratio_ci_2level'][0]:.2f} to
-{sp['ratio_ci_2level'][1]:.2f}); having both on the same clips is {SPLIT_VS_SAME}.</li>
+so that no clip has both, the static-point error is {f2(sp['mean'])}, matching all {N2} (ratio {sp['ratio']:.2f}, 95% CI {sp['ratio_ci_2level'][0]:.2f} to
+{sp['ratio_ci_2level'][1]:.2f}). Having both on the same clips lowers it further, to {f2(m('tiedrow'))} (different clips give {sv['ratio']:.2f} times
+the same-clips error, 95% CI {sv['ratio_ci_2level'][0]:.2f} to {sv['ratio_ci_2level'][1]:.2f}).</li>
 </ul>
 
 <img class="fig2" src="../../results/sparse_queries/decoder_only_error_maps_static.png" alt="Static-point error maps for six label sets, decoder-only training">
@@ -160,13 +157,11 @@ even from different clips: tracks from videos without camera poses could be pair
 <p class="note">A small model on synthetic 32 &times; 32 clips; the camera keeps a fixed height and tilt so that metric depth is recoverable from one
 frame. At this scale the model learns camera motion well but tracks moving objects only partly: even with all {N2} combinations its error on moving
 points grows with the time gap ({f2(m('full', 'moving'))} against {f2(base_m)} for assuming nothing moves). Static points, whose answer depends only on
-the camera, therefore give the cleanest comparison; moving points show the same ordering. Three seeds per label set: the intervals resample seeds
-as well as scenes, but the seed-to-seed spread is itself only roughly known. Next: Kubric clips at higher resolution, and how small the share of
-posed-depth clips can be.</p>
+the camera, therefore give the cleanest comparison; moving points show the same ordering. With three seeds per label set, the seed-to-seed spread
+is only roughly known. Next: Kubric clips at higher resolution, and how small the share of posed-depth clips can be.</p>
 
 <div class="refs">
 <p>C. Zhang et al. Efficiently reconstructing dynamic scenes one D4RT at a time. CVPR, 2026.</p>
-<p>Code, data, per-run results and statistics: github.com/RS-010806/composition/tree/main/sparse_queries</p>
 </div>
 """
 
