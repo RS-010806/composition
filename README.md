@@ -1,6 +1,6 @@
 # Composition after pretraining
 
-If a model knows "red" and "rectangle", can a few examples teach it every color-shape combination, so that the examples needed grow with **colors plus shapes** rather than **colors times shapes**? This is hard to exploit while pretraining a large model, so this repo tests the two later stages where it could be used instead: **post-training** and **in-context learning**. Part 2 runs a pair of cultural-knowledge queries on newer Gemini models, including Gemini 4 Argon.
+If a model knows "red" and "rectangle", can a few examples teach it every color-shape combination, so that the examples needed grow with **colors plus shapes** rather than **colors times shapes**? This is hard to exploit while pretraining a large model, so this repo tests the two later stages where it could be used instead: **post-training** and **in-context learning**. Part 2 runs a pair of cultural-knowledge queries on newer Gemini models, including Gemini 4 Argon. Part 3 runs the color-shape test inside a D4RT-style model, on its time-camera queries.
 
 ![Composition results](results/composition_figure.png)
 
@@ -11,6 +11,7 @@ If a model knows "red" and "rectangle", can a few examples teach it every color-
 3. **In context, the model fills that gap with its language prior.** Given confounded examples, 95 of 96 answers followed one of the two readings the examples allow, and **79 of 96** took the first word as the color, as in English. So the models were mostly right when the made-up language put the color word first (**37/48**) and wrong when it put the shape word first (**6/48**).
 4. **In-context labels work as post-training data (pilot).** Labels produced by the model in context took confounded post-training from **0% to 100%**. When the word order conflicted with the prior, the labels carried the error with them (**1%**, with color and shape swapped on 92% of images).
 5. **The Jain pair on newer models.** Gemini 4 Argon and Gemini 3.8 Flash apply the stricter Paryushan rule in **10 of 10** dinner plans each. Gemini 3.5 Flash-Lite, the newest small model, applies it in **0 of 10**, while still handling the basic query (**8 of 10**). Details in [pair/](pair/README.md).
+6. **The same rule inside a D4RT-style model.** For queries (u, v, t_src, t_tgt, t_cam), supervising one row and one column of the 6 x 6 time-camera grid (11 of 36 combinations) answered the unseen combinations as well as supervising all 36 (**0.21** vs **0.24** 3D error on static points, 1 seeds). Supervising only t_tgt = t_cam, which is what camera-frame tracks give, did not: **2.4x** the error, worse on 100 of 100 test scenes; adding one row of posed depth fixed it (**0.22**). Details in [sparse_queries/](sparse_queries/README.md).
 
 ## 1. Composition after pretraining
 
@@ -85,6 +86,14 @@ Two dinner requests for Jain guests: one needs the basic rule (no root vegetable
 
 ![The Jain pair](pair/results/figure.png)
 
+## 3. Sparse training queries in a D4RT-style model
+
+D4RT answers queries (u, v, t_src, t_tgt, t_cam): where the point seen at pixel (u, v) of frame t_src is at time t_tgt, in the coordinates of camera t_cam. It is trained on every time-camera combination, but real labels often cover only some: camera-frame 3D tracks give only t_tgt = t_cam, and posed depth only t_tgt = t_src. A small D4RT-style model, trained on synthetic clips with a moving camera and moving objects, shows which combinations need supervision.
+
+![Static-point error maps](results/sparse_queries/end_to_end_error_maps_static.png)
+
+As with colors and shapes, the combinations do not need to be crossed everywhere, only to vary independently somewhere. Tied labels leave the model unable to tell which index sets the camera, and one row of posed depth is enough to fix that. Setup, all label sets, statistics, the post-training version and caveats: [sparse_queries/](sparse_queries/README.md).
+
 ## Reproduce
 
 ```bash
@@ -103,7 +112,7 @@ python composition/posttrain.py --seeds 5 --p_home -1 0.95 \
 python composition/analyze.py     # results/composition_summary.md and the figures
 ```
 
-The Jain pair has its own instructions in [pair/README.md](pair/README.md#reproduce).
+The Jain pair and the D4RT-style experiment have their own instructions in [pair/README.md](pair/README.md#reproduce) and [sparse_queries/README.md](sparse_queries/README.md#reproduce).
 
 ## Layout
 
@@ -112,6 +121,7 @@ composition/   shapes.py, posttrain.py (JAX), browser runners (*.js), analyze.py
 results/       raw results for part 1: scratch_cnn.json, posttrain_probe_runs.csv,
                icl_records.csv, icl_to_posttrain_*.{csv,json}, summary and figures
 pair/          the Jain pair: prompts, rubric, runner, grader, verdicts, results
+sparse_queries/ D4RT-style model with sparse time-camera supervision: scenes, model, runs, report
 report/        two-page summary (PDF)
 ```
 

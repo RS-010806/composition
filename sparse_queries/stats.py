@@ -1,0 +1,131 @@
+"""Statistics for the sparse-query experiment.
+
+End to end (3 seeds per label set): every model is scored on the same 100 test scenes, so each label set is compared
+with the all-36 model scene by scene. Per scene, errors are first averaged over seeds; the mean difference gets a 95%
+bootstrap interval over scenes (10,000 resamples) and a two-sided Wilcoxon signed-rank test. Seed-level spread is
+reported alongside, with Welch's t-test on the seed means.
+Decoder only (3 seeds per label set): seed means ± sd and Welch's t-test against the all-36 decoder.
+
+python stats.py --out ../results/sparse_queries
+"""
+import argparse
+import json
+from collections import defaultdict
+from pathlib import Path
+
+import numpy as np
+from scipy import stats as st
+
+ORDER = ["full", "rowcol", "random", "tiedrow", "tied", "row"]
+KEY = {"full": "general_all"}
+
+
+def load(pattern_dir, glob):
+    out = defaultdict(dict)
+    for f in sorted(Path(pattern_dir).glob(glob)):
+        if f.name.endswith("_train.json"):
+            continue
+        r = json.load(open(f))
+        out[r["design"]][r["seed"]] = r
+    return out
+
+
+def seed_values(runs, d, which):
+    key = KEY.get(d, "general_heldout")
+    return np.array([runs[d][s][key][which]["epe"] for s in sorted(runs[d])])
+
+
+def boot_ci(x, n=10000, seed=0, fn=np.mean):
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, len(x), size=(n, len(x)))
+    b = fn(x[idx], axis=1)
+    return float(np.percentile(b, 2.5)), float(np.percentile(b, 97.5))
+
+
+def scene_matrix(runs, d, which):
+    """(seeds, scenes) per-scene errors; requires per-scene results for every seed."""
+    rows = [runs[d][s].get(f"per_scene_{which}") for s in sorted(runs[d])]
+    if any(r is None for r in rows):
+        return None
+    return np.array([[np.nan if v is None else v for v in r] for r in rows], float)
+
+
+def compare(runs, d, which, ref="full"):
+    out = {}
+    a, b = seed_values(runs, d, which), seed_values(runs, ref, which)
+    out["seeds"] = len(a)
+    out["mean"], out["sd"] = float(a.mean()), float(a.std(ddof=1)) if len(a) > 1 else 0.0
+    out["seed_values"] = a.round(4).tolist()
+    if d != ref and len(a) > 1 and len(b) > 1:
+        out["welch_p_seeds"] = float(st.ttest_ind(a, b, equal_var=False).pvalue)
+    A, B = scene_matrix(runs, d, which), scene_matrix(runs, ref, which)
+    if d != ref and A is not None and B is not None:
+        ea, eb = np.nanmean(A, 0), np.nanmean(B, 0)
+        ok = np.isfinite(ea) & np.isfinite(eb)
+        diff = ea[ok] - eb[ok]
+        out["scenes"] = int(ok.sum())
+        out["diff"] = float(diff.mean())
+        out["diff_ci"] = boot_ci(diff)
+        out["ratio"] = float(ea[ok].mean() / eb[ok].mean())
+        rng = np.random.default_rng(1)
+        idx = rng.integers(0, ok.sum(), size=(10000, ok.sum()))
+        r = ea[ok][idx].mean(1) / eb[ok][idx].mean(1)
+        out["ratio_ci"] = (float(np.percentile(r, 2.5)), float(np.percentile(r, 97.5)))
+        out["wilcoxon_p"] = float(st.wilcoxon(diff).pvalue)
+        out["scenes_worse"] = int((diff > 0).sum())
+    return out
+
+
+def holm(ps):
+    """Holm-Bonferroni adjusted p-values for a dict {key: p}."""
+    keys = sorted(ps, key=ps.get)
+    m, out, run = len(keys), {}, 0.0
+    for i, k in enumerate(keys):
+        run = max(run, min(1.0, (m - i) * ps[k]))
+        out[k] = run
+    return out
+
+
+def fmt_p(p):
+    return "<1e-15" if p < 1e-15 else (f"{p:.1e}" if p < 1e-3 else f"{p:.3f}")
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default="../results/sparse_queries")
+    a = ap.parse_args()
+    out = Path(a.out)
+    e2e = load("runs", "*_eval.json")
+    dec = load("runs_dec", "enc-*_dec-*.json")
+    res = {"end_to_end": {}, "decoder_only": {}}
+    for name, runs in (("end_to_end", e2e), ("decoder_only", dec)):
+        for d in ORDER:
+            if d in runs:
+                res[name][d] = {w: compare(runs, d, w) for w in ("static", "moving")}
+        # Holm correction across the comparisons with the all-36 model in this table
+        for test in ("wilcoxon_p", "welch_p_seeds"):
+            ps = {(d, w): c[test] for d, ws in res[name].items() for w, c in ws.items() if test in c}
+            for (d, w), p in holm(ps).items():
+                res[name][d][w][test + "_holm"] = p
+    json.dump(res, open(out / "stats.json", "w"), indent=1)
+
+    L = ["# Statistics", "",
+         "3D error on held-out combinations (t_src, t_tgt, t_cam all different), 100 test scenes. Mean ± sd over seeds.",
+         "Difference to all 36: per scene, errors averaged over seeds, then mean difference with a 95% bootstrap interval",
+         "over scenes and a two-sided Wilcoxon signed-rank test. Welch p: t-test on the seed means.",
+         "Both p columns are Holm-corrected across all comparisons with the all-36 model in the same table.", ""]
+    for name in ("end_to_end", "decoder_only"):
+        L += [f"## {name.replace('_', ' ')}", "",
+              "| Label set | Points | Seeds | Error (mean ± sd) | Difference to all 36 [95% CI] | Ratio [95% CI] | Scenes worse | Wilcoxon p | Welch p (seeds) |",
+              "|---|---|---|---|---|---|---|---|---|"]
+        for d, ws in res[name].items():
+            for w, c in ws.items():
+                diff = f"{c['diff']:+.3f} [{c['diff_ci'][0]:+.3f}, {c['diff_ci'][1]:+.3f}]" if "diff" in c else "-"
+                ratio = f"{c['ratio']:.2f} [{c['ratio_ci'][0]:.2f}, {c['ratio_ci'][1]:.2f}]" if "ratio" in c else "-"
+                worse = f"{c['scenes_worse']}/{c['scenes']}" if "scenes" in c else "-"
+                wp = fmt_p(c["wilcoxon_p_holm"]) if "wilcoxon_p_holm" in c else "-"
+                tp = fmt_p(c["welch_p_seeds_holm"]) if "welch_p_seeds_holm" in c else "-"
+                L.append(f"| {d} | {w} | {c['seeds']} | {c['mean']:.3f} ± {c['sd']:.3f} | {diff} | {ratio} | {worse} | {wp} | {tp} |")
+        L.append("")
+    (out / "stats.md").write_text("\n".join(L) + "\n")
+    print("\n".join(L))

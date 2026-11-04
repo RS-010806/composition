@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sparse training queries in a D4RT-style model</title>
+<style>
+  @page { size: A4; margin: 12mm 15mm 11mm 15mm; }
+  :root {
+    --ink: #1B1F23; --body: #2B3036; --muted: #626A73; --line: #E2E6EB; --tint: #F2F6FA;
+    --blue: #0072B2; --green: #009E73; --verm: #D55E00; --amber: #E69F00;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { font-family: Lora, Georgia, serif; font-size: 9.3pt; line-height: 1.46; color: var(--body); }
+  .sans, h1, h2, .kicker, .dek, .link, .tile, .cap, .refs, table, .note { font-family: Poppins, Inter, sans-serif; }
+  .page { break-after: page; }
+  .page:last-child { break-after: auto; }
+
+  .kicker { font-size: 7.2pt; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--blue); }
+  h1 { font-size: 17.5pt; line-height: 1.16; font-weight: 600; color: var(--ink); margin: 1.6mm 0 1.4mm 0; letter-spacing: -0.01em; }
+  .dek { font-size: 9.6pt; color: var(--muted); font-weight: 400; margin: 0 0 1mm 0; }
+  .link { font-size: 7.6pt; color: var(--muted); }
+  .link a { color: var(--blue); text-decoration: none; }
+
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3.2mm; margin: 4.2mm 0 1.5mm 0; }
+  .tile { background: var(--tint); border-top: 3px solid var(--green); padding: 2.6mm 3.2mm 2.4mm 3.2mm; }
+  .tile.bad { border-top-color: var(--verm); }
+  .tile.fix { border-top-color: var(--blue); }
+  .tile .num { font-size: 19pt; font-weight: 600; line-height: 1.05; color: var(--ink); letter-spacing: -0.01em; }
+  .tile .num small { font-size: 9.5pt; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+  .tile .lab { font-size: 7.6pt; line-height: 1.38; color: var(--body); margin-top: 1.3mm; }
+
+  h2 { font-size: 10.6pt; font-weight: 600; color: var(--ink); margin: 4.4mm 0 1.4mm 0; }
+  h2 .n { color: var(--blue); font-weight: 600; margin-right: 1.8mm; }
+  p { margin: 0 0 1.6mm 0; }
+  ul { margin: 0 0 1.6mm 0; padding-left: 4.2mm; }
+  li { margin: 0 0 1.2mm 0; }
+  li::marker { color: var(--blue); }
+  b { font-weight: 700; color: var(--ink); }
+  .q { font-style: italic; color: var(--ink); white-space: nowrap; }
+
+  img { display: block; width: 100%; }
+  .cap { font-size: 7.4pt; line-height: 1.4; color: var(--muted); margin: 1.2mm 0 2.6mm 0; }
+  .cap b { color: var(--ink); font-weight: 600; }
+
+  .note { font-size: 7.6pt; line-height: 1.4; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 7.8pt; margin: 1mm 0 2.4mm 0; }
+  th, td { text-align: left; padding: 1.15mm 2mm 1.15mm 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 500; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .refs { font-size: 7.3pt; color: var(--muted); line-height: 1.4; margin-top: 2.4mm; }
+  tr.base td { color: var(--muted); }
+  img.fig2 { width: 88%; margin: 1mm auto 0 auto; }
+  .refs p { margin: 0 0 0.8mm 0; }
+</style>
+</head>
+<body>
+
+<section class="page">
+  <div class="kicker">Sparse training queries &middot; D4RT-style model</div>
+  <h1>Which time-camera combinations does a D4RT-style model need to see?</h1>
+  <div class="dek">Trained on one row and one column of the 6 &times; 6 time-camera grid (11 of 36 combinations), a small D4RT-style model answered the combinations it never saw as well as one trained on all 36. Trained only where time and camera coincide, which is all that camera-frame tracks provide, it confused the two; one row of posed depth fixed that.</div>
+  <div class="link">Code, data and per-run results: <a href="https://github.com/RS-010806/composition/tree/main/sparse_queries">github.com/RS-010806/composition/tree/main/sparse_queries</a></div>
+
+  <div class="tiles">
+    
+<div class="tile"><div class="num">11 <small>of 36</small></div>
+<div class="lab">combinations, one row and one column: error <b>0.21</b> on held-out static points,
+against <b>0.24</b> when all 36 are supervised.</div></div>
+<div class="tile bad"><div class="num">2.4&times; <small>the error</small></div>
+<div class="lab">when only t<sub>tgt</sub> = t<sub>cam</sub> is supervised, as with camera-frame tracks: worse on
+<b>100 of 100</b> test scenes (p &lt; 10<sup>&minus;15</sup>).</div></div>
+<div class="tile fix"><div class="num">+1 <small>row</small></div>
+<div class="lab">of posed depth (t<sub>tgt</sub> = t<sub>src</sub>) added to those tracks brings the error back to <b>0.22</b>.</div></div>
+
+  </div>
+
+  
+<h2><span class="n">01</span>The question</h2>
+<p>D4RT answers queries <span class="q">(u, v, t<sub>src</sub>, t<sub>tgt</sub>, t<sub>cam</sub>)</span>: where the point seen at pixel (u, v)
+of frame t<sub>src</sub> is at time t<sub>tgt</sub>, in the coordinates of the camera of frame t<sub>cam</sub>. Its training draws t<sub>tgt</sub>
+and t<sub>cam</sub> independently and sets them equal 40% of the time, so every time-camera combination is supervised. Real labels are often
+narrower. Camera-frame 3D tracks (2D tracks plus per-frame depth) only give queries with <b>t<sub>tgt</sub> = t<sub>cam</sub></b>; posed depth
+only gives <b>t<sub>tgt</sub> = t<sub>src</sub></b>. Does the model answer combinations it was never trained on? The color-shape test suggests
+it does, as long as time and camera vary independently somewhere in the labels.</p>
+
+<img src="../../results/sparse_queries/end_to_end_error_maps_static.png" alt="Error maps on static points for four label sets">
+<div class="cap"><b>Figure 1.</b> Error on static points by target time (rows) and camera (columns), for points first seen in frame 0 of 100 new
+scenes; mean of 1 models per panel, each trained from scratch with the same number of training queries. Outlined cells were supervised; the
+rest were never seen in training. A static point's position depends only on the camera, so a model that keeps time and camera apart shows
+errors that change across columns but not down them.</div>
+
+<h2><span class="n">02</span>What I ran</h2>
+<p>A D4RT-style model at small scale, with D4RT's query interface: an encoder over all 6 frames of 32 &times; 32 video (a 3 &times; 3 convolution
+over each frame and its difference from the previous one, 8 &times; 8 patches, a 3-layer transformer), and a decoder in which each query sums a
+Fourier embedding of (u, v), learned embeddings of t<sub>src</sub>, t<sub>tgt</sub> and t<sub>cam</sub>, and an embedding of the 9 &times; 9 patch
+around (u, v), then cross-attends to the encoder tokens, never to other queries. The clips are synthetic so that every query has exact ground
+truth: a camera slides and pans over a tiled floor with 3 static and 2 moving spheres.</p>
+<p>Each label set restricts which (t<sub>tgt</sub>, t<sub>cam</sub>) cells are supervised for every source frame; all get the same number of
+training queries (5,000 steps of 8 clips &times; 128 queries, half on moving objects) and 1 seeds. Errors are 3D distances in scene units
+(the spheres have radius 0.55 to 0.8) on 100 new scenes, for combinations with t<sub>src</sub>, t<sub>tgt</sub> and t<sub>cam</sub> all different,
+which none of the sparse label sets contains.</p>
+
+</section>
+
+<section class="page">
+  
+<h2 style="margin-top:0"><span class="n">03</span>What I got</h2>
+<table>
+<tr><th>Supervised combinations</th><th class="num">Cells</th><th class="num">Static points</th><th class="num">Difference to all 36 [95% CI]</th><th class="num">Moving points</th></tr>
+<tr><td>All 36 (D4RT's sampling)</td><td class='num'>36</td><td class='num'><b>0.24</b> &plusmn; 0.00</td><td class='num'>reference</td><td class='num'>0.71 &plusmn; 0.00</td></tr><tr><td>One row + one column</td><td class='num'>11</td><td class='num'><b>0.21</b> &plusmn; 0.00</td><td class='num'>-0.03 [-0.04, -0.02]</td><td class='num'>0.74 &plusmn; 0.00</td></tr><tr><td>Camera-frame tracks + posed depth</td><td class='num'>11</td><td class='num'><b>0.22</b> &plusmn; 0.00</td><td class='num'>-0.02 [-0.04, -0.01]</td><td class='num'>0.73 &plusmn; 0.00</td></tr><tr><td>Camera-frame tracks only</td><td class='num'>6</td><td class='num'><b>0.60</b> &plusmn; 0.00</td><td class='num'>+0.35 [+0.32, +0.38]</td><td class='num'>0.83 &plusmn; 0.00</td></tr>
+<tr class="base"><td>Assume nothing moves (baseline)</td><td class="num">&ndash;</td><td class="num">1.00</td><td></td><td class="num">1.18</td></tr>
+</table>
+<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over 1 seeds. Differences are per test scene, averaged over seeds, with 95% bootstrap intervals over the
+100 scenes; p-values are two-sided Wilcoxon signed-rank tests.</div>
+<ul>
+<li><b>Varying independently is enough.</b> One row and one column, and camera-frame tracks plus posed depth (11 cells each), stay within
+0.04 of the all-36 model on static points (95% intervals above). On moving points they cost 5% and
+3% (p = 1 &times; 10<sup>-4</sup> and p = 0.02).</li>
+<li><b>Tied labels confound time and camera.</b> With only t<sub>tgt</sub> = t<sub>cam</sub>, the static-point error is 2.4 times
+higher (95% CI 2.3 to 2.6), on every one of the 100 test scenes, and it grows with the gap between
+t<sub>tgt</sub> and t<sub>cam</sub> (Figure 1): nothing in the labels says which index sets the camera. Moving points: 18% worse
+(p = 2 &times; 10<sup>-11</sup>).</li>
+<li><b>One row of posed depth resolves it</b>, with the same number of training queries.</li>
+</ul>
+
+<img class="fig2" src="../../results/sparse_queries/decoder_only_error_maps_static.png" alt="Static-point error maps for six label sets, decoder-only training">
+<div class="cap"><b>Figure 2.</b> The post-training version: a fresh decoder on the frozen encoder of an all-36 model, trained with each label set
+(mean of 2 seeds). Every label set in which the time indices vary independently somewhere matches all 36, random cells included
+(0.31 against 0.31). The two that keep a pair tied fail in different ways: tracks only blurs time
+into the camera (error grows away from the diagonal, 0.61); posed depth only never sees time change, so it moves static
+points with it (error grows down the rows, 0.65). Both differ from all 36 across seeds (Welch
+p = 0.02 and p = 0.01).</div>
+
+<h2><span class="n">04</span>What it suggests for D4RT</h2>
+<ul>
+<li><b>Camera-frame tracks alone may not teach a change of reference frame.</b> Queries with t<sub>tgt</sub> &ne; t<sub>cam</sub>, as in
+world-coordinate tracking, need labels in which time and camera vary independently.</li>
+<li><b>World-coordinate tracks may not be needed for it.</b> Camera-frame tracks plus posed depth, both easier to obtain, covered the rest.
+This matters most when training on real videos without camera poses.</li>
+<li><b>A cheap check at full scale:</b> hold out queries with t<sub>src</sub>, t<sub>tgt</sub> and t<sub>cam</sub> all different during training and score them.</li>
+</ul>
+
+<h2><span class="n">05</span>Limits and next steps</h2>
+<p class="note">A small model on synthetic 32 &times; 32 clips; the camera keeps a fixed height and tilt so that metric depth is recoverable from one
+frame. At this scale the model learns camera motion well but tracks moving objects only partly: even with all 36 combinations its error on moving
+points grows with the time gap (0.71 against 1.18 for assuming nothing moves). Static points, whose answer depends only on
+the camera, therefore give the cleanest comparison; moving points show the same ordering. Next: Kubric clips at higher resolution, and a mixture in
+which some clips are fully labeled and others have only camera-frame tracks, which is closer to how D4RT's training data is assembled.</p>
+
+<div class="refs">
+<p>C. Zhang et al. Efficiently reconstructing dynamic scenes one D4RT at a time. CVPR, 2026.</p>
+<p>Code, data, per-run results and statistics: github.com/RS-010806/composition/tree/main/sparse_queries</p>
+</div>
+
+</section>
+
+</body>
+</html>

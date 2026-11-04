@@ -1,0 +1,35 @@
+{
+ "all": {
+  "n": 144000,
+  "err_to_truth": 0.7134405374526978,
+  "err_to_tgt_reading": 0.746246874332428,
+  "err_to_cam_reading": 0.6990635395050049,
+  "closest_share": {
+   "truth": 0.45236805555555554,
+   "both_as_t_tgt": 0.36549305555555556,
+   "both_as_t_cam": 0.18213888888888888
+  }
+ },
+ "moving": {
+  "n": 71040,
+  "err_to_truth": 0.8345625400543213,
+  "err_to_tgt_reading": 0.8531391620635986,
+  "err_to_cam_reading": 0.8054201006889343,
+  "closest_share": {
+   "truth": 0.3323902027027027,
+   "both_as_t_tgt": 0.29840934684684683,
+   "both_as_t_cam": 0.36920045045045047
+  }
+ },
+ "static": {
+  "n": 72960,
+  "err_to_truth": 0.5955058932304382,
+  "err_to_tgt_reading": 0.6421674489974976,
+  "err_to_cam_reading": 0.5955058932304382,
+  "closest_share": {
+   "truth": 0.5691885964912281,
+   "both_as_t_tgt": 0.43081140350877195,
+   "both_as_t_cam": 0.0
+  }
+ }
+}
