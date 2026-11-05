@@ -44,8 +44,8 @@ ROW_DRIFT = (f"; it moves a static point by {DRD['row']['mean']:.2f} units acros
 every = (f"on every one of the {tied['scenes']} test scenes" if tied["scenes_worse"] == tied["scenes"]
          else f"on {tied['scenes_worse']} of {tied['scenes']} test scenes")
 
-DEK = (f"Trained on one row and one column of the {T} &times; {T} time-camera grid ({K} of {N2} combinations), a small D4RT-style "
-       f"model answered the combinations it never saw as well as one trained on all {N2}. Trained only where time and camera "
+DEK = (f"Trained on one row and one column of the {T} &times; {T} grid of (target time, camera) combinations, {K} of {N2}, a small "
+       f"D4RT-style model answered the combinations it never saw as well as one trained on all {N2}. Trained only where target time and camera "
        f"coincide, which is all that camera-frame tracks provide, it confused the two; one row of posed depth fixed that, even "
        f"when it came from other clips.")
 
@@ -63,17 +63,18 @@ and to <b>{f2(m('split'))}</b> when it comes from other clips.</div></div>
 
 BODY1 = f"""
 <h2><span class="n">01</span>The question</h2>
-<p>D4RT answers queries <span class="q">(u, v, t<sub>src</sub>, t<sub>tgt</sub>, t<sub>cam</sub>)</span>: where the point seen at pixel (u, v)
+<p>D4RT (Zhang et al., CVPR 2026) answers queries <span class="q">(u, v, t<sub>src</sub>, t<sub>tgt</sub>, t<sub>cam</sub>)</span>: where the point seen at pixel (u, v)
 of frame t<sub>src</sub> is at time t<sub>tgt</sub>, in the coordinates of the camera of frame t<sub>cam</sub>. Its training draws t<sub>tgt</sub>
 and t<sub>cam</sub> independently and sets them equal 40% of the time, so every time-camera combination is supervised. Real labels are often
 narrower. Camera-frame 3D tracks (2D tracks plus per-frame depth) only give queries with <b>t<sub>tgt</sub> = t<sub>cam</sub></b>; posed depth
-only gives <b>t<sub>tgt</sub> = t<sub>src</sub></b>. Does the model answer combinations it was never trained on? The color-shape test suggests
-it does, as long as time and camera vary independently somewhere in the labels.</p>
+only gives <b>t<sub>tgt</sub> = t<sub>src</sub></b>. Does the model answer combinations it was never trained on? In an earlier test on a
+{T} &times; {T} grid of colors and shapes, labels for one row and one column taught a model all {N2} combinations, while the diagonal, where each
+color always comes with the same shape, taught none. The same should hold here if time and camera vary independently somewhere in the labels.</p>
 
 <img src="../../results/sparse_queries/end_to_end_error_maps_static.png" alt="Error maps on static points for each label set">
 <div class="cap"><b>Figure 1.</b> Error on static points by target time (rows) and camera (columns), for points first seen in frame 0 of 100 new
-scenes; mean of {ns_e} models per panel, each trained from scratch with the same number of training queries. Outlined cells were supervised; the
-rest were never seen in training. A static point's position depends only on the camera, so a model that keeps time and camera apart shows
+scenes; mean of {ns_e} models per panel, each trained from scratch with the same number of training queries. Outlined cells were supervised (in the
+different-clips model, each clip had only the row or only the diagonal); the rest were never seen in training. A static point's position depends only on the camera, so a model that keeps time and camera apart shows
 errors that change across columns but not down them. Numbers below the panels: error on all held-out combinations and source frames.</div>
 
 <h2><span class="n">02</span>What I ran</h2>
@@ -89,80 +90,84 @@ which none of the sparse label sets contains.</p>
 """
 
 
-def row(d, label):
+def row(d):
+    name, sub = LABEL[d]
     s, mo = SE[d]["static"], SE[d]["moving"]
-    rt = lambda c: "reference" if d == "full" else f"{c['ratio']:.2f}&times; [{c['ratio_ci_2level'][0]:.2f}, {c['ratio_ci_2level'][1]:.2f}]"
-    cells = f"{T} per clip" if d == "split" else E[d]["cells"]
-    return (f"<tr><td>{label}</td><td class='num'>{cells}</td><td class='num'><b>{s['mean']:.3f}</b> &plusmn; {s['sd']:.3f}</td>"
-            f"<td class='num'>{rt(s)}</td><td class='num'>{mo['mean']:.3f} &plusmn; {mo['sd']:.3f}</td><td class='num'>{rt(mo)}</td></tr>")
+
+    def rt(c, hi=False):
+        if d == "full":
+            return "<td class='num ref'>reference</td>"
+        return (f"<td class='num{' hi' if hi else ''}'>{c['ratio']:.2f}&times; "
+                f"<span class='ci'>[{c['ratio_ci_2level'][0]:.2f}, {c['ratio_ci_2level'][1]:.2f}]</span></td>")
+    cells = f"{K} of {N2}<span class='sub'>{T} per clip</span>" if d == "split" else f"{E[d]['cells']} of {N2}"
+    return (f"<tr><td>{name}<span class='sub'>{sub}</span></td><td class='num'>{cells}</td>"
+            f"<td class='num'><b>{s['mean']:.3f}</b> <span class='sd'>&plusmn; {s['sd']:.3f}</span></td>{rt(s, d == 'tied')}"
+            f"<td class='num'>{mo['mean']:.3f} <span class='sd'>&plusmn; {mo['sd']:.3f}</span></td>{rt(mo)}</tr>")
 
 
-LABEL = {"full": f"All {N2} (D4RT's sampling)", "rowcol": "One row + one column",
-         "tiedrow": "Camera-frame tracks + posed depth", "split": "Tracks + posed depth, on different clips",
-         "tied": "Camera-frame tracks only"}
+TT, TC, TS = "t<sub>tgt</sub>", "t<sub>cam</sub>", "t<sub>src</sub>"
+LABEL = {"full": (f"All {N2} combinations", "D4RT&rsquo;s sampling; the reference"),
+         "rowcol": ("One row + one column", f"{TT} = {TS} or {TC} = {TS}"),
+         "tiedrow": ("Camera-frame tracks + posed depth", f"{TT} = {TC} or {TT} = {TS}, both on every clip"),
+         "split": ("Tracks + posed depth, different clips", f"{TT} = {TC} on half of the clips, {TT} = {TS} on the rest"),
+         "tied": ("Camera-frame tracks only", f"{TT} = {TC}")}
 E2E = [d for d in ["full", "rowcol", "tiedrow", "split", "tied"] if d in SE]
 INDEP = [d for d in E2E if d != "tied"]
 sp = SE["split"]["static"]
 sv = S["split_vs_tiedrow"]["static"]
 pct = lambda c: f"{100 * (c['ratio_ci_2level'][0] - 1):.0f} to {100 * (c['ratio_ci_2level'][1] - 1):.0f}%"
-TABLE = "".join(row(d, LABEL[d]) for d in E2E)
+TABLE = "".join(row(d) for d in E2E)
 rc_m, tr_m, ti_m = SE["rowcol"]["moving"], SE["tiedrow"]["moving"], SE["tied"]["moving"]
 
 BODY2 = f"""
 <h2 style="margin-top:0"><span class="n">03</span>What I got</h2>
-<table>
-<tr><th>Supervised combinations</th><th class="num">Cells</th><th class="num">Static points</th><th class="num">Ratio to all {N2} [95% CI]</th><th class="num">Moving points</th><th class="num">Ratio to all {N2} [95% CI]</th></tr>
+<div class="tlead">Error at the combinations with {TS}, {TT} and {TC} all different, which only the all-{N2} model was trained on, on 100 new scenes:
+mean 3D distance, lower is better.</div>
+<table class="res">
+<tr class="grp"><th rowspan="2">Labels used in training</th><th rowspan="2" class="num">Trained on</th>
+<th colspan="2" class="gh">Static points</th><th colspan="2" class="gh">Moving points</th></tr>
+<tr><th class="num">Error</th><th class="num">vs all {N2} [95% CI]</th><th class="num">Error</th><th class="num">vs all {N2} [95% CI]</th></tr>
 {TABLE}
-<tr class="base"><td>Assume nothing moves (baseline)</td><td class="num">&ndash;</td><td class="num">{base_s:.3f}</td><td></td><td class="num">{base_m:.3f}</td><td></td></tr>
+<tr class="base"><td>Baseline: assume nothing moves</td><td class="num">none</td>
+<td class="num">{base_s:.3f}</td><td></td><td class="num">{base_m:.3f}</td><td></td></tr>
 </table>
-<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over {ns_e} seeds. Ratios to the all-{N2} model, with 95% intervals from a bootstrap over both the training
-seeds and the 100 test scenes. p-values in the text: Welch&rsquo;s t-tests across seeds, Holm-corrected; scene-level tests are in the repository.</div>
+<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over {ns_e} seeds. vs all {N2}: ratio to the all-{N2} error, with a 95% bootstrap interval over seeds and test scenes.
+Baseline: the point where it was seen, as if nothing moved. p-values in the text: Welch&rsquo;s t-tests across seeds, Holm-corrected.</div>
 <ul>
-<li><b>Varying independently is enough.</b> One row and one column, and camera-frame tracks plus posed depth ({K} cells each), are no worse
-than all {N2} on static points: error ratios {SE['rowcol']['static']['ratio']:.2f} and {SE['tiedrow']['static']['ratio']:.2f}, with 95% intervals that end at
-{SE['rowcol']['static']['ratio_ci_2level'][1]:.2f} and {SE['tiedrow']['static']['ratio_ci_2level'][1]:.2f}. On moving points they cost a small
-{100 * (rc_m['ratio'] - 1):.0f}% and {100 * (tr_m['ratio'] - 1):.0f}% (95% intervals {pct(rc_m)} and {pct(tr_m)}).</li>
-<li><b>Tied labels confound time and camera.</b> With only t<sub>tgt</sub> = t<sub>cam</sub>, the static-point error is {tied['ratio']:.1f} times
-higher (95% CI {tied['ratio_ci_2level'][0]:.1f} to {tied['ratio_ci_2level'][1]:.1f}), {every}{" and in every seed" if tied['every_seed_worse'] else ""}
-({fp(tied['welch_p_seeds_holm'])}), and it grows with the gap between
-t<sub>tgt</sub> and t<sub>cam</sub> (Figure 1): nothing in the labels says which index sets the camera. The model reads time as camera motion:
-asked about a static point from one camera at different times, it moves the point by {DR['tied']['mean']:.2f} units on average, where the other
-models keep it still ({min(DR[d]['mean'] for d in INDEP):.2f} to {max(DR[d]['mean'] for d in INDEP):.2f}).
-Moving points: {100 * (ti_m['ratio'] - 1):.0f}% worse ({fp(ti_m['welch_p_seeds_holm'])}).</li>
-<li><b>One row of posed depth resolves it, even from other clips.</b> With tracks on half of the clips and posed depth on the other half,
-so that no clip has both, the static-point error is {f2(sp['mean'])}, matching all {N2} (ratio {sp['ratio']:.2f}, 95% CI {sp['ratio_ci_2level'][0]:.2f} to
-{sp['ratio_ci_2level'][1]:.2f}). Having both on the same clips lowers it further, to {f2(m('tiedrow'))} (different clips give {sv['ratio']:.2f} times
-the same-clips error, 95% CI {sv['ratio_ci_2level'][0]:.2f} to {sv['ratio_ci_2level'][1]:.2f}).</li>
+<li><b>Varying independently is enough.</b> One row and one column, or camera-frame tracks plus posed depth, are no worse than all {N2} on
+static points (95% intervals end at {SE['rowcol']['static']['ratio_ci_2level'][1]:.2f}&times; and {SE['tiedrow']['static']['ratio_ci_2level'][1]:.2f}&times;) and cost only
+{100 * (rc_m['ratio'] - 1):.0f}% and {100 * (tr_m['ratio'] - 1):.0f}% on moving points.</li>
+<li><b>Tied labels confound time and camera.</b> With camera-frame tracks only, the error on static points is {tied['ratio']:.1f} times higher,
+{every}{" and in every seed" if tied['every_seed_worse'] else ""} ({fp(tied['welch_p_seeds_holm'])}): nothing in the labels says which index sets the camera.
+The model reads time as camera motion: asked about a static point from one camera at different times, it moves the point by
+{DR['tied']['mean']:.2f} units on average, against {min(DR[d]['mean'] for d in INDEP):.2f} to {max(DR[d]['mean'] for d in INDEP):.2f} for the other models.</li>
+<li><b>One row of posed depth resolves it, even from other clips.</b> With tracks and posed depth on different clips, the error matches all {N2}
+({sp['ratio']:.2f}&times;). Both on the same clips is better still ({f2(m('tiedrow'))}; different clips give {sv['ratio']:.2f} times that, 95% CI
+{sv['ratio_ci_2level'][0]:.2f} to {sv['ratio_ci_2level'][1]:.2f}).</li>
 </ul>
 
 <img class="fig2" src="../../results/sparse_queries/decoder_only_error_maps_static.png" alt="Static-point error maps for six label sets, decoder-only training">
 <div class="cap"><b>Figure 2.</b> The post-training version: a fresh decoder on the frozen encoder of an all-{N2} model, trained with each label set
-(mean of {ns_d} seeds). Every label set in which the time indices vary independently somewhere matches all {N2}, random cells included
-({f2(m('random', 'static', SD))} against {f2(m('full', 'static', SD))}). The two that keep a pair tied fail in different ways: tracks only blurs time
+(mean of {ns_d} seeds). Label sets in which the time indices vary independently somewhere match all {N2}, random cells included.
+The two that keep a pair tied fail in different ways: tracks only blurs time
 into the camera (error grows away from the diagonal, {f2(m('tied', 'static', SD))}); posed depth only never sees time change, so it moves static
 points with it (error grows down the rows, {f2(m('row', 'static', SD))}{ROW_DRIFT}). Both differ from all {N2} across seeds (Welch
 {fp(SD['tied']['static']['welch_p_seeds_holm'])} and {fp(SD['row']['static']['welch_p_seeds_holm'])}).</div>
 
 <h2><span class="n">04</span>What it suggests for D4RT</h2>
 <ul>
-<li><b>Camera-frame tracks alone may not teach a change of reference frame.</b> Queries with t<sub>tgt</sub> &ne; t<sub>cam</sub>, as in
-world-coordinate tracking, need labels in which time and camera vary independently. This matters most for real videos without camera
-poses, where camera-frame tracks may be the only 3D labels.</li>
-<li><b>World-coordinate tracks may not be needed for it.</b> Camera-frame tracks plus posed depth, each easier to obtain, covered the rest,
-even from different clips: tracks from videos without camera poses could be paired with posed depth from other footage.</li>
+<li><b>Camera-frame tracks alone may not teach a change of reference frame.</b> Queries with {TT} &ne; {TC}, as in world-coordinate
+tracking, need labels in which time and camera vary independently.</li>
+<li><b>Posed depth from other footage may supply it.</b> Tracks plus posed depth covered those queries even from different clips, so
+unposed videos could contribute their tracks, with no need for world-coordinate tracks.</li>
 <li><b>A cheap check at full scale:</b> hold out queries with t<sub>src</sub>, t<sub>tgt</sub> and t<sub>cam</sub> all different during training and score them.</li>
 </ul>
 
 <h2><span class="n">05</span>Limits and next steps</h2>
-<p class="note">A small model on synthetic 32 &times; 32 clips; the camera keeps a fixed height and tilt so that metric depth is recoverable from one
-frame. At this scale the model learns camera motion well but tracks moving objects only partly: even with all {N2} combinations its error on moving
-points grows with the time gap ({f2(m('full', 'moving'))} against {f2(base_m)} for assuming nothing moves). Static points, whose answer depends only on
-the camera, therefore give the cleanest comparison; moving points show the same ordering. With three seeds per label set, the seed-to-seed spread
-is only roughly known. Next: Kubric clips at higher resolution, and how small the share of posed-depth clips can be.</p>
-
-<div class="refs">
-<p>C. Zhang et al. Efficiently reconstructing dynamic scenes one D4RT at a time. CVPR, 2026.</p>
-</div>
+<p class="note">A small model on synthetic 32 &times; 32 clips, {ns_e} seeds per label set; the camera keeps a fixed height and tilt so that metric depth
+is recoverable from one frame. The model learns camera motion well but tracks moving objects only partly ({f2(m('full', 'moving'))} against {f2(base_m)} for
+assuming nothing moves, even with all {N2}), so static points, which depend only on the camera, give the cleanest comparison; moving points show the
+same ordering. Next: Kubric clips at higher resolution, and how small the share of posed-depth clips can be.</p>
 """
 
 html = (HERE / "template.html").read_text()

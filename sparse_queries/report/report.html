@@ -51,6 +51,17 @@
   sup, sub { line-height: 0; }
   .refs { font-size: 7.3pt; color: var(--muted); line-height: 1.4; margin-top: 2.4mm; }
   tr.base td { color: var(--muted); }
+  .tlead { font-family: Poppins, Inter, sans-serif; font-size: 7.6pt; color: var(--body); margin: 0 0 0.6mm 0; }
+  table.res th { vertical-align: bottom; color: var(--muted); }
+  table.res tr.grp th { border-bottom: none; padding-bottom: 0.3mm; }
+  table.res th.gh { text-align: center; color: var(--ink); font-weight: 600; border-bottom: 1px solid var(--line); padding-right: 0; }
+  table.res td { vertical-align: middle; }
+  table.res td.num, table.res th.num, table.res th.gh { white-space: nowrap; }
+  table.res td .sub, table.res th .sub { display: block; font-size: 6.6pt; line-height: 1.25; color: var(--muted); margin-top: 0.2mm; }
+  table.res .sd, table.res .ci { color: var(--muted); }
+  table.res td.ref { color: var(--muted); }
+  table.res td.hi { color: var(--verm); font-weight: 600; }
+  table.res td.hi .ci { color: var(--verm); font-weight: 400; }
   img.fig2 { width: 100%; margin: 1mm auto 0 auto; }
   .refs p { margin: 0 0 0.8mm 0; }
 </style>
@@ -60,7 +71,7 @@
 <section class="page">
   <div class="kicker">Sparse training queries &middot; D4RT-style model</div>
   <h1>Which time-camera combinations does a D4RT-style model need to see?</h1>
-  <div class="dek">Trained on one row and one column of the 6 &times; 6 time-camera grid (11 of 36 combinations), a small D4RT-style model answered the combinations it never saw as well as one trained on all 36. Trained only where time and camera coincide, which is all that camera-frame tracks provide, it confused the two; one row of posed depth fixed that, even when it came from other clips.</div>
+  <div class="dek">Trained on one row and one column of the 6 &times; 6 grid of (target time, camera) combinations, 11 of 36, a small D4RT-style model answered the combinations it never saw as well as one trained on all 36. Trained only where target time and camera coincide, which is all that camera-frame tracks provide, it confused the two; one row of posed depth fixed that, even when it came from other clips.</div>
   <div class="link">Code, data and per-run results: <a href="https://github.com/RS-010806/composition/tree/main/sparse_queries">github.com/RS-010806/composition/tree/main/sparse_queries</a></div>
 
   <div class="tiles">
@@ -79,17 +90,18 @@ and to <b>0.25</b> when it comes from other clips.</div></div>
 
   
 <h2><span class="n">01</span>The question</h2>
-<p>D4RT answers queries <span class="q">(u, v, t<sub>src</sub>, t<sub>tgt</sub>, t<sub>cam</sub>)</span>: where the point seen at pixel (u, v)
+<p>D4RT (Zhang et al., CVPR 2026) answers queries <span class="q">(u, v, t<sub>src</sub>, t<sub>tgt</sub>, t<sub>cam</sub>)</span>: where the point seen at pixel (u, v)
 of frame t<sub>src</sub> is at time t<sub>tgt</sub>, in the coordinates of the camera of frame t<sub>cam</sub>. Its training draws t<sub>tgt</sub>
 and t<sub>cam</sub> independently and sets them equal 40% of the time, so every time-camera combination is supervised. Real labels are often
 narrower. Camera-frame 3D tracks (2D tracks plus per-frame depth) only give queries with <b>t<sub>tgt</sub> = t<sub>cam</sub></b>; posed depth
-only gives <b>t<sub>tgt</sub> = t<sub>src</sub></b>. Does the model answer combinations it was never trained on? The color-shape test suggests
-it does, as long as time and camera vary independently somewhere in the labels.</p>
+only gives <b>t<sub>tgt</sub> = t<sub>src</sub></b>. Does the model answer combinations it was never trained on? In an earlier test on a
+6 &times; 6 grid of colors and shapes, labels for one row and one column taught a model all 36 combinations, while the diagonal, where each
+color always comes with the same shape, taught none. The same should hold here if time and camera vary independently somewhere in the labels.</p>
 
 <img src="../../results/sparse_queries/end_to_end_error_maps_static.png" alt="Error maps on static points for each label set">
 <div class="cap"><b>Figure 1.</b> Error on static points by target time (rows) and camera (columns), for points first seen in frame 0 of 100 new
-scenes; mean of 3 models per panel, each trained from scratch with the same number of training queries. Outlined cells were supervised; the
-rest were never seen in training. A static point's position depends only on the camera, so a model that keeps time and camera apart shows
+scenes; mean of 3 models per panel, each trained from scratch with the same number of training queries. Outlined cells were supervised (in the
+different-clips model, each clip had only the row or only the diagonal); the rest were never seen in training. A static point's position depends only on the camera, so a model that keeps time and camera apart shows
 errors that change across columns but not down them. Numbers below the panels: error on all held-out combinations and source frames.</div>
 
 <h2><span class="n">02</span>What I ran</h2>
@@ -108,59 +120,53 @@ which none of the sparse label sets contains.</p>
 <section class="page">
   
 <h2 style="margin-top:0"><span class="n">03</span>What I got</h2>
-<table>
-<tr><th>Supervised combinations</th><th class="num">Cells</th><th class="num">Static points</th><th class="num">Ratio to all 36 [95% CI]</th><th class="num">Moving points</th><th class="num">Ratio to all 36 [95% CI]</th></tr>
-<tr><td>All 36 (D4RT's sampling)</td><td class='num'>36</td><td class='num'><b>0.242</b> &plusmn; 0.003</td><td class='num'>reference</td><td class='num'>0.710 &plusmn; 0.007</td><td class='num'>reference</td></tr><tr><td>One row + one column</td><td class='num'>11</td><td class='num'><b>0.230</b> &plusmn; 0.018</td><td class='num'>0.95&times; [0.87, 1.03]</td><td class='num'>0.745 &plusmn; 0.008</td><td class='num'>1.05&times; [1.03, 1.07]</td></tr><tr><td>Camera-frame tracks + posed depth</td><td class='num'>11</td><td class='num'><b>0.222</b> &plusmn; 0.009</td><td class='num'>0.92&times; [0.87, 0.98]</td><td class='num'>0.734 &plusmn; 0.007</td><td class='num'>1.03&times; [1.01, 1.06]</td></tr><tr><td>Tracks + posed depth, on different clips</td><td class='num'>6 per clip</td><td class='num'><b>0.247</b> &plusmn; 0.008</td><td class='num'>1.02&times; [0.97, 1.08]</td><td class='num'>0.735 &plusmn; 0.005</td><td class='num'>1.03&times; [1.01, 1.06]</td></tr><tr><td>Camera-frame tracks only</td><td class='num'>6</td><td class='num'><b>0.617</b> &plusmn; 0.021</td><td class='num'>2.54&times; [2.37, 2.73]</td><td class='num'>0.851 &plusmn; 0.014</td><td class='num'>1.20&times; [1.15, 1.25]</td></tr>
-<tr class="base"><td>Assume nothing moves (baseline)</td><td class="num">&ndash;</td><td class="num">1.003</td><td></td><td class="num">1.180</td><td></td></tr>
+<div class="tlead">Error at the combinations with t<sub>src</sub>, t<sub>tgt</sub> and t<sub>cam</sub> all different, which only the all-36 model was trained on, on 100 new scenes:
+mean 3D distance, lower is better.</div>
+<table class="res">
+<tr class="grp"><th rowspan="2">Labels used in training</th><th rowspan="2" class="num">Trained on</th>
+<th colspan="2" class="gh">Static points</th><th colspan="2" class="gh">Moving points</th></tr>
+<tr><th class="num">Error</th><th class="num">vs all 36 [95% CI]</th><th class="num">Error</th><th class="num">vs all 36 [95% CI]</th></tr>
+<tr><td>All 36 combinations<span class='sub'>D4RT&rsquo;s sampling; the reference</span></td><td class='num'>36 of 36</td><td class='num'><b>0.242</b> <span class='sd'>&plusmn; 0.003</span></td><td class='num ref'>reference</td><td class='num'>0.710 <span class='sd'>&plusmn; 0.007</span></td><td class='num ref'>reference</td></tr><tr><td>One row + one column<span class='sub'>t<sub>tgt</sub> = t<sub>src</sub> or t<sub>cam</sub> = t<sub>src</sub></span></td><td class='num'>11 of 36</td><td class='num'><b>0.230</b> <span class='sd'>&plusmn; 0.018</span></td><td class='num'>0.95&times; <span class='ci'>[0.87, 1.03]</span></td><td class='num'>0.745 <span class='sd'>&plusmn; 0.008</span></td><td class='num'>1.05&times; <span class='ci'>[1.03, 1.07]</span></td></tr><tr><td>Camera-frame tracks + posed depth<span class='sub'>t<sub>tgt</sub> = t<sub>cam</sub> or t<sub>tgt</sub> = t<sub>src</sub>, both on every clip</span></td><td class='num'>11 of 36</td><td class='num'><b>0.222</b> <span class='sd'>&plusmn; 0.009</span></td><td class='num'>0.92&times; <span class='ci'>[0.87, 0.98]</span></td><td class='num'>0.734 <span class='sd'>&plusmn; 0.007</span></td><td class='num'>1.03&times; <span class='ci'>[1.01, 1.06]</span></td></tr><tr><td>Tracks + posed depth, different clips<span class='sub'>t<sub>tgt</sub> = t<sub>cam</sub> on half of the clips, t<sub>tgt</sub> = t<sub>src</sub> on the rest</span></td><td class='num'>11 of 36<span class='sub'>6 per clip</span></td><td class='num'><b>0.247</b> <span class='sd'>&plusmn; 0.008</span></td><td class='num'>1.02&times; <span class='ci'>[0.97, 1.08]</span></td><td class='num'>0.735 <span class='sd'>&plusmn; 0.005</span></td><td class='num'>1.03&times; <span class='ci'>[1.01, 1.06]</span></td></tr><tr><td>Camera-frame tracks only<span class='sub'>t<sub>tgt</sub> = t<sub>cam</sub></span></td><td class='num'>6 of 36</td><td class='num'><b>0.617</b> <span class='sd'>&plusmn; 0.021</span></td><td class='num hi'>2.54&times; <span class='ci'>[2.37, 2.73]</span></td><td class='num'>0.851 <span class='sd'>&plusmn; 0.014</span></td><td class='num'>1.20&times; <span class='ci'>[1.15, 1.25]</span></td></tr>
+<tr class="base"><td>Baseline: assume nothing moves</td><td class="num">none</td>
+<td class="num">1.003</td><td></td><td class="num">1.180</td><td></td></tr>
 </table>
-<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over 3 seeds. Ratios to the all-36 model, with 95% intervals from a bootstrap over both the training
-seeds and the 100 test scenes. p-values in the text: Welch&rsquo;s t-tests across seeds, Holm-corrected; scene-level tests are in the repository.</div>
+<div class="cap" style="margin-top:-1mm">Mean &plusmn; sd over 3 seeds. vs all 36: ratio to the all-36 error, with a 95% bootstrap interval over seeds and test scenes.
+Baseline: the point where it was seen, as if nothing moved. p-values in the text: Welch&rsquo;s t-tests across seeds, Holm-corrected.</div>
 <ul>
-<li><b>Varying independently is enough.</b> One row and one column, and camera-frame tracks plus posed depth (11 cells each), are no worse
-than all 36 on static points: error ratios 0.95 and 0.92, with 95% intervals that end at
-1.03 and 0.98. On moving points they cost a small
-5% and 3% (95% intervals 3 to 7% and 1 to 6%).</li>
-<li><b>Tied labels confound time and camera.</b> With only t<sub>tgt</sub> = t<sub>cam</sub>, the static-point error is 2.5 times
-higher (95% CI 2.4 to 2.7), on every one of the 100 test scenes and in every seed
-(p&nbsp;=&nbsp;0.006), and it grows with the gap between
-t<sub>tgt</sub> and t<sub>cam</sub> (Figure 1): nothing in the labels says which index sets the camera. The model reads time as camera motion:
-asked about a static point from one camera at different times, it moves the point by 0.33 units on average, where the other
-models keep it still (0.03 to 0.04).
-Moving points: 20% worse (p&nbsp;=&nbsp;0.006).</li>
-<li><b>One row of posed depth resolves it, even from other clips.</b> With tracks on half of the clips and posed depth on the other half,
-so that no clip has both, the static-point error is 0.25, matching all 36 (ratio 1.02, 95% CI 0.97 to
-1.08). Having both on the same clips lowers it further, to 0.22 (different clips give 1.11 times
-the same-clips error, 95% CI 1.04 to 1.18).</li>
+<li><b>Varying independently is enough.</b> One row and one column, or camera-frame tracks plus posed depth, are no worse than all 36 on
+static points (95% intervals end at 1.03&times; and 0.98&times;) and cost only
+5% and 3% on moving points.</li>
+<li><b>Tied labels confound time and camera.</b> With camera-frame tracks only, the error on static points is 2.5 times higher,
+on every one of the 100 test scenes and in every seed (p&nbsp;=&nbsp;0.006): nothing in the labels says which index sets the camera.
+The model reads time as camera motion: asked about a static point from one camera at different times, it moves the point by
+0.33 units on average, against 0.03 to 0.04 for the other models.</li>
+<li><b>One row of posed depth resolves it, even from other clips.</b> With tracks and posed depth on different clips, the error matches all 36
+(1.02&times;). Both on the same clips is better still (0.22; different clips give 1.11 times that, 95% CI
+1.04 to 1.18).</li>
 </ul>
 
 <img class="fig2" src="../../results/sparse_queries/decoder_only_error_maps_static.png" alt="Static-point error maps for six label sets, decoder-only training">
 <div class="cap"><b>Figure 2.</b> The post-training version: a fresh decoder on the frozen encoder of an all-36 model, trained with each label set
-(mean of 3 seeds). Every label set in which the time indices vary independently somewhere matches all 36, random cells included
-(0.31 against 0.31). The two that keep a pair tied fail in different ways: tracks only blurs time
+(mean of 3 seeds). Label sets in which the time indices vary independently somewhere match all 36, random cells included.
+The two that keep a pair tied fail in different ways: tracks only blurs time
 into the camera (error grows away from the diagonal, 0.64); posed depth only never sees time change, so it moves static
 points with it (error grows down the rows, 0.65; it moves a static point by 0.34 units across target times, against 0.05 for the all-36 decoder). Both differ from all 36 across seeds (Welch
 p&nbsp;=&nbsp;0.04 and p&nbsp;=&nbsp;1.5&nbsp;&times;&nbsp;10<sup>&minus;4</sup>).</div>
 
 <h2><span class="n">04</span>What it suggests for D4RT</h2>
 <ul>
-<li><b>Camera-frame tracks alone may not teach a change of reference frame.</b> Queries with t<sub>tgt</sub> &ne; t<sub>cam</sub>, as in
-world-coordinate tracking, need labels in which time and camera vary independently. This matters most for real videos without camera
-poses, where camera-frame tracks may be the only 3D labels.</li>
-<li><b>World-coordinate tracks may not be needed for it.</b> Camera-frame tracks plus posed depth, each easier to obtain, covered the rest,
-even from different clips: tracks from videos without camera poses could be paired with posed depth from other footage.</li>
+<li><b>Camera-frame tracks alone may not teach a change of reference frame.</b> Queries with t<sub>tgt</sub> &ne; t<sub>cam</sub>, as in world-coordinate
+tracking, need labels in which time and camera vary independently.</li>
+<li><b>Posed depth from other footage may supply it.</b> Tracks plus posed depth covered those queries even from different clips, so
+unposed videos could contribute their tracks, with no need for world-coordinate tracks.</li>
 <li><b>A cheap check at full scale:</b> hold out queries with t<sub>src</sub>, t<sub>tgt</sub> and t<sub>cam</sub> all different during training and score them.</li>
 </ul>
 
 <h2><span class="n">05</span>Limits and next steps</h2>
-<p class="note">A small model on synthetic 32 &times; 32 clips; the camera keeps a fixed height and tilt so that metric depth is recoverable from one
-frame. At this scale the model learns camera motion well but tracks moving objects only partly: even with all 36 combinations its error on moving
-points grows with the time gap (0.71 against 1.18 for assuming nothing moves). Static points, whose answer depends only on
-the camera, therefore give the cleanest comparison; moving points show the same ordering. With three seeds per label set, the seed-to-seed spread
-is only roughly known. Next: Kubric clips at higher resolution, and how small the share of posed-depth clips can be.</p>
-
-<div class="refs">
-<p>C. Zhang et al. Efficiently reconstructing dynamic scenes one D4RT at a time. CVPR, 2026.</p>
-</div>
+<p class="note">A small model on synthetic 32 &times; 32 clips, 3 seeds per label set; the camera keeps a fixed height and tilt so that metric depth
+is recoverable from one frame. The model learns camera motion well but tracks moving objects only partly (0.71 against 1.18 for
+assuming nothing moves, even with all 36), so static points, which depend only on the camera, give the cleanest comparison; moving points show the
+same ordering. Next: Kubric clips at higher resolution, and how small the share of posed-depth clips can be.</p>
 
 </section>
 
